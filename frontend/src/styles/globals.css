@@ -1,0 +1,88 @@
+/* ─── HireOnyx Design System — Blue/Teal palette ─── */
+
+:root {
+  /* Backgrounds */
+  --bg-base:       #080C14;
+  --bg-surface:    #0F1520;
+  --bg-elevated:   #161D2E;
+  --bg-subtle:     #1C2438;
+
+  /* Primary accent — blue */
+  --accent:        #4F8EF7;
+  --accent-dim:    #3A6FD8;
+  --accent-glow:   rgba(79, 142, 247, 0.20);
+  --accent-tint:   rgba(79, 142, 247, 0.10);
+
+  /* Secondary — teal */
+  --teal:          #00C2A8;
+  --teal-glow:     rgba(0, 194, 168, 0.20);
+  --teal-tint:     rgba(0, 194, 168, 0.10);
+
+  /* Gradient */
+  --gradient:      linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%);
+
+  /* Text */
+  --text-primary:  #F0F4FF;
+  --text-secondary:#94A3B8;
+  --text-muted:    #4B5563;
+  --text-inverse:  #080C14;
+
+  /* Borders */
+  --border:        rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-accent: rgba(79, 142, 247, 0.35);
+
+  /* Status */
+  --status-applied:   #6B7280;
+  --status-review:    #4F8EF7;
+  --status-offer:     #10B981;
+  --status-rejected:  #E05252;
+  --status-selected:  #00C2A8;
+  --status-rejected-text: #E05252;
+
+  /* Shadows */
+  --shadow-card: 0 0 0 1px rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.4);
+
+  /* Job type badges */
+  --badge-fulltime:         #1A3A2A;
+  --badge-fulltime-text:    #4ADE80;
+  --badge-internship:       #1A2A3A;
+  --badge-internship-text:  #60A5FA;
+  --badge-remote:           #2A1A3A;
+  --badge-remote-text:      #A78BFA;
+  --badge-parttime:         #2A2A1A;
+  --badge-parttime-text:    #FACC15;
+  --badge-contract:         #2A1A1A;
+  --badge-contract-text:    #F87171;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Space Grotesk", "DM Sans", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 3px; }
+
+/* Range slider */
+input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #F0F4FF; border: 2px solid #4F8EF7; cursor: pointer;
+  box-shadow: 0 0 8px rgba(79,142,247,0.5); pointer-events: auto;
+}
+input[type=range]::-webkit-slider-runnable-track { background: transparent; }
