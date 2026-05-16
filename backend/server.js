@@ -5,36 +5,36 @@ require('dotenv').config();
 
 const app = express();
 
-// CORS: support multiple origins (local dev + production)
 const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
-  'http://localhost:4173', // Vite preview
+  'http://localhost:4173',
 ].filter(Boolean);
 
 app.use(helmet());
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return cb(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
     cb(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
 }));
+
+// NOTE: express.json() is skipped for multipart routes — multer handles those
 app.use(express.json({ limit: '10mb' }));
 
-// Routes
-app.use('/api/health', require('./src/routes/health.routes'));
-app.use('/api/ai', require('./src/routes/ai.routes'));
-app.use('/api/auth', require('./src/routes/auth.routes'));
+// ── Routes ──────────────────────────────────────────────────
+app.use('/api/health',  require('./src/routes/health.routes'));
+app.use('/api/auth',    require('./src/routes/auth.routes'));
+app.use('/api/ai',      require('./src/routes/matching.routes'));  // AI matching
 
-// 404 handler for unknown routes
+// ── 404 ─────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ success: false, error: `Route ${req.method} ${req.path} not found` });
 });
 
-// Error middleware MUST be last
+// ── Error handler (must be last) ────────────────────────────
 app.use(require('./src/middleware/error.middleware'));
 
 const PORT = process.env.PORT || 5000;

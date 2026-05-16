@@ -1,9 +1,16 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { SURFACE, LABEL, matchColor, matchGlow } from '../lib/design';
 import { daysAgo, formatSalary, stableMatch } from '../lib/utils';
 import { usePageTitle } from '../lib/usePageTitle';
+import {
+  getSavedProfile, matchJobs, buildMatchMap,
+  matchColor as aiMatchColor, matchGlow as aiMatchGlow,
+} from '../lib/aiMatchingApi';
+import ResumeUpload from '../components/ai/ResumeUpload';
+import MatchBadge from '../components/ai/MatchBadge';
 
 const TYPE_MAP = { 'Full-time': 'full-time', 'Part-time': 'part-time', 'Remote': 'remote', 'Contract': 'contract', 'Internship': 'internship' };
 
@@ -50,11 +57,13 @@ function MatchCircle({ value }) {
   );
 }
 
-/* ── Job List Card — exact reference style ── */
-function JobListCard({ job, featured }) {
+/* ── Job List Card — with AI match score support ── */
+function JobListCard({ job, featured, aiMatch }) {
   const navigate = useNavigate();
-  const match = stableMatch(job.id);
-  const accent = matchColor(match);
+  // Use real AI match if available, else deterministic fallback
+  const match = aiMatch?.matchScore ?? stableMatch(job.id);
+  const isAiMatch = !!aiMatch?.matchScore;
+  const accent = isAiMatch ? aiMatchColor(match) : matchColor(match);
 
   return (
     <div onClick={() => navigate(`/jobs/${job.id}`)} style={{
@@ -119,7 +128,8 @@ function JobListCard({ job, featured }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {job.salary_min && <span style={{ color: '#F0F4FF', fontSize: 15, fontWeight: 600 }}>{formatSalary(job.salary_min, job.salary_max)}</span>}
-          <span style={{ padding: '4px 10px', borderRadius: 999, background: `${accent}18`, border: `1px solid ${accent}55`, color: accent, fontFamily: '"JetBrains Mono"', fontSize: 11, fontWeight: 600, boxShadow: matchGlow(match) }}>
+          <span style={{ padding: '4px 10px', borderRadius: 999, background: `${accent}18`, border: `1px solid ${accent}55`, color: accent, fontFamily: '"JetBrains Mono"', fontSize: 11, fontWeight: 600, boxShadow: isAiMatch ? aiMatchGlow(match) : matchGlow(match), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {isAiMatch && <span title="AI-powered match">✦</span>}
             {match}% match
           </span>
           <button style={{ padding: '6px 14px', borderRadius: 10, background: 'transparent', border: '1px solid rgba(255,255,255,0.18)', color: '#F0F4FF', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -135,17 +145,49 @@ const SKELETONS = Array.from({ length: 4 });
 
 export default function Jobs() {
   usePageTitle('Browse Jobs');
+  const { profile: userProfile } = useAuth();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ query: '', location: '', workplace: [], type: [], seniority: [], salaryMin: 0, salaryMax: 999 });
   const [sortOpen, setSortOpen] = useState(false);
   const [sort, setSort] = useState('Relevance');
+
+  // AI matching state
+  const [resumeProfile, setResumeProfile] = useState(() => getSavedProfile());
+  const [matchMap, setMatchMap] = useState(new Map());
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const [showUpload, setShowUpload] = useState(false);
+
+  const runMatching = useCallback(async (profile, jobList) => {
+    if (!profile || !jobList?.length) return;
+    setAiLoading(true); setAiError('');
+    try {
+      const matches = await matchJobs(profile, jobList);
+      setMatchMap(buildMatchMap(matches));
+      // Sort by match score if AI is active
+      setSort('AI Match');
+    } catch (err) {
+      setAiError('AI matching unavailable. Showing keyword scores.');
+      // Fallback: build map from stableMatch
+      const fallback = new Map(jobList.map(j => [j.id, { jobId: j.id, matchScore: stableMatch(j.id) }]));
+      setMatchMap(fallback);
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
     supabase.from('jobs').select('*').eq('is_active', true).order('created_at', { ascending: false })
-      .then(({ data }) => { setJobs(data || []); setLoading(false); });
-  }, []);
+      .then(({ data }) => {
+        const jobList = data || [];
+        setJobs(jobList);
+        setLoading(false);
+        // Auto-run AI matching if resume already parsed
+        if (resumeProfile) runMatching(resumeProfile, jobList);
+      });
+  }, []); // eslint-disable-line
 
   const toggle = (key, val) => setFilters(f => ({ ...f, [key]: f[key].includes(val) ? f[key].filter(x => x !== val) : [...f[key], val] }));
 
@@ -155,6 +197,11 @@ export default function Jobs() {
     const matchT = filters.type.length === 0 || filters.type.some(t => j.type === TYPE_MAP[t]);
     const matchL = !filters.location || j.location.toLowerCase().includes(filters.location.toLowerCase());
     return matchQ && matchT && matchL;
+  }).sort((a, b) => {
+    if (sort === 'AI Match' && matchMap.size > 0) {
+      return (matchMap.get(b.id)?.matchScore || 0) - (matchMap.get(a.id)?.matchScore || 0);
+    }
+    return 0;
   });
 
   const activeFilterChips = [
@@ -254,6 +301,48 @@ export default function Jobs() {
 
       {/* ── MAIN CONTENT ── */}
       <div style={{ flex: 1, minWidth: 0 }}>
+
+        {/* ── AI Resume Banner ── */}
+        {userProfile?.role === 'seeker' && (
+          <div style={{ marginBottom: 20 }}>
+            {!resumeProfile ? (
+              <div>
+                {showUpload ? (
+                  <ResumeUpload onParsed={(p) => {
+                    setResumeProfile(p);
+                    setShowUpload(false);
+                    if (p) runMatching(p, jobs);
+                  }} />
+                ) : (
+                  <button onClick={() => setShowUpload(true)} style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    width: '100%', padding: '14px 20px', borderRadius: 12,
+                    background: 'rgba(79,142,247,0.06)', border: '1px dashed rgba(79,142,247,0.30)',
+                    color: '#4F8EF7', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  }}>
+                    <span style={{ fontSize: 18 }}>✦</span>
+                    Upload your resume to see AI match scores for every role
+                    <span style={{ marginLeft: 'auto', fontSize: 12, opacity: 0.7 }}>PDF only →</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, background: 'rgba(0,194,168,0.06)', border: '1px solid rgba(0,194,168,0.20)' }}>
+                <span style={{ color: '#00C2A8', fontSize: 16 }}>✦</span>
+                <span style={{ color: '#00C2A8', fontSize: 13, fontWeight: 500 }}>
+                  AI matching active · {resumeProfile.skills.length} skills detected
+                </span>
+                {aiLoading && <span style={{ color: '#94A3B8', fontSize: 12 }}>Analyzing…</span>}
+                {aiError && <span style={{ color: '#E05252', fontSize: 12 }}>{aiError}</span>}
+                <button onClick={() => {
+                  setResumeProfile(null); setMatchMap(new Map()); setSort('Relevance');
+                  clearProfile?.() || localStorage.removeItem('hireonyx_resume_profile');
+                }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#4B5563', cursor: 'pointer', fontSize: 18 }}>×</button>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.01em', color: '#F0F4FF', margin: '0 0 10px' }}>
@@ -293,7 +382,14 @@ export default function Jobs() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {filtered.map((job, i) => <JobListCard key={job.id} job={job} featured={i < 2} />)}
+            {filtered.map((job, i) => (
+              <JobListCard
+                key={job.id}
+                job={job}
+                featured={i < 2}
+                aiMatch={matchMap.get(job.id) || null}
+              />
+            ))}
           </div>
         )}
       </div>

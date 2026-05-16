@@ -5,9 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { SURFACE, LABEL, BTN_PRIMARY, BTN_SECONDARY, matchColor, matchGlow } from '../lib/design';
 import { stableMatch } from '../lib/utils';
 import ApplyModal from '../components/applications/ApplyModal';
-import ResumeAnalyzer from '../components/ai/ResumeAnalyzer';
+import WhyMatched from '../components/ai/WhyMatched';
 import { formatDate, formatSalary } from '../lib/utils';
 import { usePageTitle } from '../lib/usePageTitle';
+import { getSavedProfile, matchSingleJob, matchColor as aiMatchColor, matchGlow as aiMatchGlow } from '../lib/aiMatchingApi';
 import toast from 'react-hot-toast';
 
 const TYPE_LABELS = {
@@ -65,6 +66,8 @@ export default function JobDetail() {
   const [notFound, setNotFound] = useState(false);
   const [application, setApplication] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [aiMatch, setAiMatch] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   usePageTitle(job ? `${job.title} at ${job.company}` : 'Job Detail');
 
@@ -87,6 +90,16 @@ export default function JobDetail() {
           .from('applications').select('*')
           .eq('job_id', id).eq('seeker_id', user.id).maybeSingle();
         if (!cancelled) setApplication(appData);
+
+        // AI match — only if seeker has uploaded resume
+        const savedProfile = getSavedProfile();
+        if (savedProfile && !cancelled) {
+          setAiLoading(true);
+          matchSingleJob(savedProfile, jobData)
+            .then((m) => { if (!cancelled) setAiMatch(m); })
+            .catch(() => {/* silent fail */})
+            .finally(() => { if (!cancelled) setAiLoading(false); });
+        }
       }
       setLoading(false);
     }
@@ -106,8 +119,10 @@ export default function JobDetail() {
   );
 
   const salary = formatSalary(job.salary_min, job.salary_max);
-  const match = stableMatch(job.id);
-  const accent = matchColor(match);
+  // Use real AI match score if available, fallback to deterministic hash
+  const match = aiMatch?.matchScore ?? stableMatch(job.id);
+  const isAiMatch = !!aiMatch?.matchScore;
+  const accent = isAiMatch ? aiMatchColor(match) : matchColor(match);
 
   function ApplySection() {
     // Recruiter who posted this job
@@ -261,16 +276,10 @@ export default function JobDetail() {
             </button>
           </div>
 
-          {/* Match reasons */}
-          <div style={{ ...SURFACE, padding: '24px' }}>
-            <div style={{ ...LABEL, marginBottom: 14 }}>Match breakdown</div>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontFamily: '"JetBrains Mono", monospace', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <li style={{ color: '#00C2A8' }}>+ Skills alignment: strong</li>
-              <li style={{ color: '#00C2A8' }}>+ Location: {job.location.toLowerCase().includes('remote') ? 'remote-friendly' : 'on-site match'}</li>
-              <li style={{ color: '#4F8EF7' }}>~ {match >= 80 ? 'Experience level: good match' : 'Experience level: partial match'}</li>
-              {salary && <li style={{ color: '#94A3B8' }}>~ Salary range: competitive</li>}
-            </ul>
-          </div>
+          {/* AI Match Analysis — shows when seeker has uploaded resume */}
+          {profile?.role === 'seeker' && (aiLoading || aiMatch) && (
+            <WhyMatched match={aiMatch} loading={aiLoading} />
+          )}
 
           {/* Job details */}
           <div style={{ ...SURFACE, padding: '24px' }}>
@@ -292,8 +301,7 @@ export default function JobDetail() {
         </div>
       </div>
 
-      {/* AI Resume Analyzer */}
-      <ResumeAnalyzer job={job} />
+      {/* AI Resume Analyzer — coming soon */}
 
       {/* Apply Modal */}
       {modalOpen && (

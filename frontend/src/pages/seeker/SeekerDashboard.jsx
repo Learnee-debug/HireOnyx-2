@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { SURFACE, LABEL, matchColor } from '../../lib/design';
 import { daysAgo } from '../../lib/utils';
+import { getSavedProfile } from '../../lib/aiMatchingApi';
+import ResumeUpload from '../../components/ai/ResumeUpload';
 
 /* Stage config — exact from reference Pages.tsx */
 const stageColor = {
@@ -37,6 +39,7 @@ export default function SeekerDashboard() {
   const navigate = useNavigate();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resumeProfile, setResumeProfile] = useState(() => getSavedProfile());
 
   useEffect(() => {
     supabase.from('applications')
@@ -58,10 +61,42 @@ export default function SeekerDashboard() {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
 
       {/* Header */}
-      <div style={{ marginBottom: 32 }}>
+      <div style={{ marginBottom: 24 }}>
         <div style={{ ...LABEL, color: '#4F8EF7', marginBottom: 8 }}>Job Seeker</div>
         <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.02em', color: '#F0F4FF', margin: '0 0 6px' }}>My applications</h1>
         <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, margin: 0 }}>Track every role you've applied to, with live status from each employer.</p>
+      </div>
+
+      {/* ── AI Resume Upload ── */}
+      <div style={{ marginBottom: 28 }}>
+        {resumeProfile ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 12, background: 'rgba(0,194,168,0.06)', border: '1px solid rgba(0,194,168,0.20)' }}>
+            <span style={{ fontSize: 22 }}>📄</span>
+            <div>
+              <div style={{ color: '#00C2A8', fontWeight: 600, fontSize: 14 }}>
+                Resume active — {resumeProfile.skills.length} skills detected
+              </div>
+              <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>
+                AI match scores are shown on job listings. Reupload anytime.
+              </div>
+            </div>
+            <button onClick={() => navigate('/jobs')} style={{
+              marginLeft: 'auto', padding: '7px 16px', borderRadius: 8,
+              background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)',
+              color: '#080C14', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+            }}>Browse matched jobs →</button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ ...LABEL, marginBottom: 10 }}>AI Match — Upload Your Resume</div>
+            <ResumeUpload compact onParsed={(p) => { setResumeProfile(p); }} />
+            {!resumeProfile && (
+              <p style={{ color: '#4B5563', fontSize: 12, margin: '8px 0 0' }}>
+                Upload once to see AI match scores on every job listing. Stored locally, never shared.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Stat cards — exact reference layout */}
