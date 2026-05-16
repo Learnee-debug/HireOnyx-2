@@ -1,7 +1,8 @@
 {
-  "name": "frontend",
+  "name": "hireonyx-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "HireOnyx — AI-powered technical hiring platform",
   "type": "module",
   "scripts": {
     "dev": "vite",
