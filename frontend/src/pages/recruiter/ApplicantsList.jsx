@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
+import RecruiterLayout from '../../components/layout/RecruiterLayout';
 
 const STATUSES = ['applied', 'reviewing', 'selected', 'rejected'];
 const STATUS_LABELS = { applied: 'Applied', reviewing: 'Reviewing', selected: 'Selected', rejected: 'Rejected' };
@@ -24,17 +25,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function SidebarItem({ icon, label, to, active }) {
-  return (
-    <Link to={to}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-body-sm font-medium transition-colors ${active
-        ? 'bg-accent-light text-primary'
-        : 'text-text-secondary hover:bg-surface-container-high hover:text-text-primary'}`}>
-      <span className="material-symbols-outlined text-[18px]">{icon}</span>
-      {label}
-    </Link>
-  );
-}
+
 
 function Drawer({ applicant, onClose, onStatusChange }) {
   const [updating, setUpdating] = useState(false);
@@ -144,7 +135,6 @@ const AVATAR_COLORS = [
 
 export default function ApplicantsList() {
   const { id } = useParams();
-  const location = useLocation();
   const [job, setJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -180,29 +170,7 @@ export default function ApplicantsList() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-60px)] bg-page-bg">
-      {/* Left Sidebar */}
-      <aside className="hidden md:flex flex-col w-[220px] flex-shrink-0 bg-surface-container-lowest border-r border-border-default sticky top-nav-height h-[calc(100vh-60px)] overflow-y-auto">
-        <div className="p-4 flex flex-col gap-1 flex-1">
-          <div className="font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em] px-3 mb-2 mt-2">Menu</div>
-          <SidebarItem icon="dashboard" label="Dashboard" to="/recruiter/dashboard" active={false} />
-          <SidebarItem icon="work" label="Active Jobs" to="/recruiter/dashboard" active={location.pathname.includes('/applicants')} />
-          <SidebarItem icon="people" label="Candidates" to="/recruiter/dashboard" active={false} />
-          <SidebarItem icon="event" label="Interviews" to="/recruiter/dashboard" active={false} />
-          <SidebarItem icon="bar_chart" label="Reports" to="/recruiter/dashboard" active={false} />
-          <SidebarItem icon="settings" label="Settings" to="/recruiter/dashboard" active={false} />
-          <div className="flex-1" />
-          <div className="mt-4">
-            <Link to="/post-job"
-              className="flex items-center justify-center gap-2 w-full h-10 px-5 bg-primary-container text-white font-semibold text-[14px] rounded-lg hover:opacity-90 active:scale-[0.98] transition-all">
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              Post Job
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
+    <RecruiterLayout>
       <div className="flex-1 min-w-0 px-margin-page py-10 max-w-[1280px] mx-auto w-full">
 
         {/* Breadcrumb */}
@@ -322,6 +290,6 @@ export default function ApplicantsList() {
           onStatusChange={handleStatusChange}
         />
       )}
-    </div>
+    </RecruiterLayout>
   );
 }

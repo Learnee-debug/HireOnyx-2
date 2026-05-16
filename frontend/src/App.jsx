@@ -16,6 +16,9 @@ import NotFound from './pages/NotFound';
 import SeekerDashboard from './pages/seeker/SeekerDashboard';
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
 import ApplicantsList from './pages/recruiter/ApplicantsList';
+import ActiveJobs from './pages/recruiter/ActiveJobs';
+import Candidates from './pages/recruiter/Candidates';
+import Reports from './pages/recruiter/Reports';
 
 import './styles/globals.css';
 
@@ -62,6 +65,30 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="recruiter">
                       <ApplicantsList />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recruiter/jobs"
+                  element={
+                    <ProtectedRoute requiredRole="recruiter">
+                      <ActiveJobs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recruiter/candidates"
+                  element={
+                    <ProtectedRoute requiredRole="recruiter">
+                      <Candidates />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recruiter/reports"
+                  element={
+                    <ProtectedRoute requiredRole="recruiter">
+                      <Reports />
                     </ProtectedRoute>
                   }
                 />
