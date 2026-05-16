@@ -58,7 +58,17 @@ export default function PostJob() {
   }
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px', position: 'relative' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px', position: 'relative' }} className="pj-root">
+      <style>{`
+        @media(max-width:900px){.pj-root{padding:24px 16px!important}}
+        @media(max-width:640px){
+          .pj-form{padding:20px!important}
+          .pj-grid{grid-template-columns:1fr!important}
+          .pj-salary-grid{grid-template-columns:1fr 1fr!important}
+          .pj-actions{flex-direction:column!important;align-items:stretch!important}
+          .pj-actions a,.pj-actions button{text-align:center;justify-content:center}
+        }
+      `}</style>
       <div style={{ position: 'absolute', top: -100, right: '15%', width: 500, height: 500, background: 'radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div style={{ ...LABEL, color: '#4F8EF7', marginBottom: 8 }}>Recruiter</div>
@@ -67,8 +77,8 @@ export default function PostJob() {
         Roles are reviewed within 24 hours and matched to candidates by skill score.
       </p>
 
-      <form onSubmit={handleSubmit} style={{ ...SURFACE, padding: 32, maxWidth: 860 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <form onSubmit={handleSubmit} style={{ ...SURFACE, padding: 32, maxWidth: 860 }} className="pj-form">
+        <div className="pj-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
           {/* Full width: title */}
           <div style={{ gridColumn: '1 / -1' }}>
             <Field label="Role title" required>
@@ -89,7 +99,7 @@ export default function PostJob() {
             </select>
           </Field>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="pj-salary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Field label="Salary min (₹/mo)">
               <input type="number" value={fields.salary_min} onChange={e => set('salary_min', e.target.value)} placeholder="40000" style={INPUT_STYLE} onFocus={focus} onBlur={blur} />
             </Field>
@@ -132,7 +142,7 @@ export default function PostJob() {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="pj-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <Link to="/recruiter/dashboard" style={{ padding: '11px 20px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.18)', color: '#F0F4FF', fontSize: 14, fontWeight: 500 }}>Cancel</Link>
           <button type="submit" disabled={loading} style={{ ...BTN_PRIMARY, padding: '11px 24px', display: 'inline-flex', alignItems: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}>
             + {loading ? 'Publishing…' : 'Publish role'}

@@ -172,7 +172,7 @@ export default function JobDetail() {
   }
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
+    <div className="jd-root" style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
       {/* Breadcrumb */}
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'center', gap: 8 }}>
         <Link to="/jobs" style={{ color: '#4B5563', fontSize: 13 }}>Jobs</Link>
@@ -180,7 +180,7 @@ export default function JobDetail() {
         <span style={{ color: '#94A3B8', fontSize: 13 }}>{job.title}</span>
       </div>
 
-      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+      <div className="jd-layout" style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
         {/* ── LEFT: Main content ── */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Company row */}
@@ -248,7 +248,7 @@ export default function JobDetail() {
         </div>
 
         {/* ── RIGHT: Sticky sidebar ── */}
-        <div style={{ width: 320, flexShrink: 0, position: 'sticky', top: 76, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="jd-sidebar" style={{ width: 320, flexShrink: 0, position: 'sticky', top: 76, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Match score card */}
           <div style={{ ...SURFACE, padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -320,6 +320,11 @@ export default function JobDetail() {
         @media (max-width: 1024px) {
           .jd-layout { flex-direction: column !important; }
           .jd-sidebar { width: 100% !important; position: static !important; }
+        }
+        @media (max-width: 640px) {
+          .jd-root { padding: 24px 16px !important; }
+          .jd-layout { gap: 20px !important; }
+          .jd-sidebar { width: 100% !important; }
         }
       `}</style>
     </div>

@@ -153,8 +153,15 @@ export default function ApplicantsList() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }}>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }} className="al-root">
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @media(max-width:900px){
+          .al-root{padding:24px 16px!important}
+          .al-table-wrap{overflow-x:auto!important}
+          .al-table-header,.al-table-row{min-width:520px}
+        }
+      `}</style>
 
       {/* Header */}
       <Link to="/recruiter/dashboard" style={{ color: 'var(--text-muted)', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '24px' }}>
@@ -191,9 +198,9 @@ export default function ApplicantsList() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>No applicants yet.</p>
         </div>
       ) : (
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }}>
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr',
+        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }} className="al-table-wrap">
+          <div className="al-table-header" style={{
+            display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr', minWidth: 520,
             padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)',
           }}>
             {['Name', 'Email', 'Applied', 'Status', 'Actions'].map(h => (
@@ -204,8 +211,9 @@ export default function ApplicantsList() {
           {applicants.map(app => (
             <div
               key={app.id}
+              className="al-table-row"
               style={{
-                display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr',
+                display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr', minWidth: 520,
                 padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)',
                 alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s ease',
               }}

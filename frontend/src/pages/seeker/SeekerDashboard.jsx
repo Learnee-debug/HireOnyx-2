@@ -57,8 +57,22 @@ export default function SeekerDashboard() {
   ];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }} className="sd-root">
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @media(max-width:900px){
+          .sd-root{padding:24px 16px!important}
+          .sd-stats{grid-template-columns:repeat(2,1fr)!important}
+          .sd-table-wrap{overflow-x:auto!important}
+          .sd-table-header,.sd-table-row{grid-template-columns:2fr 1fr 1fr auto!important}
+          .sd-col-match{display:none!important}
+        }
+        @media(max-width:480px){
+          .sd-stats{grid-template-columns:repeat(2,1fr)!important}
+          .sd-table-header,.sd-table-row{grid-template-columns:2fr 1fr auto!important}
+          .sd-col-updated{display:none!important}
+        }
+      `}</style>
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
@@ -100,7 +114,7 @@ export default function SeekerDashboard() {
       </div>
 
       {/* Stat cards — exact reference layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
+      <div className="sd-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
         {stats.map(s => (
           <div key={s.label} style={{ ...SURFACE, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -132,15 +146,19 @@ export default function SeekerDashboard() {
           </button>
         </div>
       ) : (
-        <div style={SURFACE}>
+        <div style={SURFACE} className="sd-table-wrap">
           {/* Table header */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', ...LABEL }}>
-            {['Role', 'Stage', 'Match', 'Updated', ''].map(h => <div key={h}>{h}</div>)}
+          <div className="sd-table-header" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', ...LABEL, minWidth: 480 }}>
+            <div>Role</div>
+            <div>Stage</div>
+            <div className="sd-col-match">Match</div>
+            <div className="sd-col-updated">Updated</div>
+            <div></div>
           </div>
 
           {apps.map(a => (
-            <div key={a.id} onClick={() => navigate(`/jobs/${a.job_id}`)} style={{
-              display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto',
+            <div key={a.id} onClick={() => navigate(`/jobs/${a.job_id}`)} className="sd-table-row" style={{
+              display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', minWidth: 480,
               padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)',
               alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s ease',
             }}
@@ -152,8 +170,8 @@ export default function SeekerDashboard() {
                 <div style={{ color: '#94A3B8', fontSize: 13 }}>{a.jobs?.company}</div>
               </div>
               <div><StagePill status={a.status} /></div>
-              <div style={{ color: '#94A3B8', fontFamily: '"JetBrains Mono"', fontSize: 13 }}>—</div>
-              <div style={{ color: '#4B5563', fontSize: 13 }}>{daysAgo(a.applied_at)}</div>
+              <div className="sd-col-match" style={{ color: '#94A3B8', fontFamily: '"JetBrains Mono"', fontSize: 13 }}>—</div>
+              <div className="sd-col-updated" style={{ color: '#4B5563', fontSize: 13 }}>{daysAgo(a.applied_at)}</div>
               <button style={{ color: '#4F8EF7', fontSize: 13, fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View</button>
             </div>
           ))}

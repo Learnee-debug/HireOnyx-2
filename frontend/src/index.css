@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Global mobile resets ── */
+* { box-sizing: border-box; }
+
+html, body {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent long words from breaking layout */
+p, h1, h2, h3, h4, span, div {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 768px) {
+  button, a { min-height: 36px; }
+  /* Ensure page padding on mobile */
+  [style*="padding: '40px 32px'"] { padding: 24px 16px !important; }
+}
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }

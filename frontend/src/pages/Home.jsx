@@ -140,7 +140,7 @@ function JobRow({ job }) {
       </div>
 
       {/* Skills */}
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+      <div className="hn-jobrow-skills" style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
         {job.skills_required?.slice(0, 3).map(s => (
           <span key={s} style={{
             padding: '3px 10px', borderRadius: 999,
@@ -152,7 +152,7 @@ function JobRow({ job }) {
 
       {/* Salary + CTA */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        {job.salary_min && <span style={{ color: '#F0F4FF', fontSize: 14, fontWeight: 600 }}>{formatSalary(job.salary_min, job.salary_max)}</span>}
+        {job.salary_min && <span className="hn-jobrow-salary" style={{ color: '#F0F4FF', fontSize: 14, fontWeight: 600 }}>{formatSalary(job.salary_min, job.salary_max)}</span>}
         <button style={{
           padding: '6px 14px', borderRadius: 8,
           background: 'transparent', border: '1px solid rgba(255,255,255,0.18)',
@@ -174,7 +174,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', overflow: 'hidden' }} className="hn-home-root">
       {/* Background glows — exact from reference */}
       <div style={{ position: 'absolute', top: -200, left: '20%', width: 800, height: 800, background: 'radial-gradient(circle, rgba(79,142,247,0.10) 0%, transparent 60%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', top: 100, right: -150, width: 700, height: 700, background: 'radial-gradient(circle, rgba(0,194,168,0.08) 0%, transparent 60%)', pointerEvents: 'none' }} />
@@ -205,7 +205,7 @@ export default function Home() {
             The only platform where skill matching, ATS pipeline, and application tracking live in one workspace.
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 0, flexWrap: 'wrap' }}>
+          <div className="hn-hero-btns" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 0, flexWrap: 'wrap' }}>
             <button onClick={() => navigate('/jobs')} style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               padding: '12px 24px', borderRadius: 10,
@@ -242,7 +242,7 @@ export default function Home() {
 
       {/* ── TRUST STRIP ── */}
       <section style={{ maxWidth: 1280, margin: '0 auto', padding: '0 32px 40px' }}>
-        <div style={{ ...SURFACE, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '16px 40px', padding: '20px 24px' }}>
+        <div className="hn-stats-strip" style={{ ...SURFACE, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '16px 40px', padding: '20px 24px' }}>
           {[
             { icon: '✓', label: 'Verified Active Jobs' },
             { icon: '⚡', label: 'Real-time ATS' },
@@ -250,7 +250,7 @@ export default function Home() {
             { icon: '✦', label: 'Match Scoring' },
           ].map((t, i) => (
             <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#94A3B8' }}>
-              {i > 0 && <span style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.10)', marginRight: 10 }} />}
+              {i > 0 && <span className="hn-stats-divider" style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.10)', marginRight: 10 }} />}
               <span style={{ color: '#00C2A8', fontSize: 15 }}>{t.icon}</span>
               <span style={{ fontSize: 13, fontWeight: 500 }}>{t.label}</span>
             </div>
@@ -303,8 +303,18 @@ export default function Home() {
           .hn-hero-section { grid-template-columns: 1fr !important; }
           .hn-hero-visual { display: none !important; }
         }
+        @media (max-width: 768px) {
+          .hn-home-root > section { padding-left: 16px !important; padding-right: 16px !important; }
+          .hn-jobrow-skills { display: none !important; }
+          .hn-jobrow-salary { display: none !important; }
+        }
         @media (max-width: 640px) {
-          .hn-hero-section { padding: 40px 20px 60px !important; }
+          .hn-hero-section { padding: 40px 16px 48px !important; }
+          .hn-hero-section h1 { font-size: 36px !important; }
+          .hn-hero-btns { flex-direction: column !important; align-items: stretch !important; }
+          .hn-hero-btns button, .hn-hero-btns a { text-align: center; justify-content: center; }
+          .hn-stats-strip { flex-direction: column !important; gap: 16px !important; padding: 24px 16px !important; }
+          .hn-stats-divider { display: none !important; }
         }
       `}</style>
     </div>

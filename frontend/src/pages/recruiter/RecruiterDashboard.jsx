@@ -45,8 +45,19 @@ export default function RecruiterDashboard() {
   }
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }} className="rd-root">
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @media(max-width:900px){
+          .rd-root{padding:24px 16px!important}
+          .rd-stats{grid-template-columns:repeat(3,1fr)!important}
+          .rd-table-wrap{overflow-x:auto!important}
+          .rd-table-header,.rd-table-row{min-width:580px}
+        }
+        @media(max-width:600px){
+          .rd-stats{grid-template-columns:repeat(1,1fr)!important}
+        }
+      `}</style>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
@@ -63,7 +74,7 @@ export default function RecruiterDashboard() {
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 32 }}>
+      <div className="rd-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 32 }}>
         {stats.map(s => (
           <div key={s.label} style={{ ...SURFACE, padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -92,12 +103,12 @@ export default function RecruiterDashboard() {
           <Link to="/post-job" style={{ display: 'inline-flex', padding: '11px 24px', borderRadius: 10, background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)', color: '#080C14', fontSize: 14, fontWeight: 600, boxShadow: '0 0 20px rgba(79,142,247,0.25)' }}>Post Your First Job →</Link>
         </div>
       ) : (
-        <div style={SURFACE}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 0.7fr 1fr 1.3fr', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', ...LABEL }}>
+        <div style={SURFACE} className="rd-table-wrap">
+          <div className="rd-table-header" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 0.7fr 1fr 1.3fr', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', ...LABEL, minWidth: 580 }}>
             {['Title', 'Type', 'Location', 'Apps', 'Posted', 'Actions'].map(h => <div key={h}>{h}</div>)}
           </div>
           {jobs.map(job => (
-            <div key={job.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 0.7fr 1fr 1.3fr', padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center', transition: 'background 0.15s ease' }}
+            <div key={job.id} className="rd-table-row" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 0.7fr 1fr 1.3fr', padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center', transition: 'background 0.15s ease', minWidth: 580 }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >

@@ -117,16 +117,16 @@ function JobListCard({ job, featured, aiMatch }) {
             )}
           </div>
         </div>
-        <MatchCircle value={match} />
+        <div className="hn-jobs-card-circle"><MatchCircle value={match} /></div>
       </div>
 
       {/* Bottom row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+      <div className="hn-jobs-card-bottom" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <span style={{ color: '#94A3B8', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>📍 {job.location}</span>
           <span style={{ padding: '2px 8px', borderRadius: 999, background: '#1C2438', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', fontSize: 11, fontFamily: '"JetBrains Mono"', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{job.type}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="hn-jobs-card-bottom-right" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           {job.salary_min && <span style={{ color: '#F0F4FF', fontSize: 15, fontWeight: 600 }}>{formatSalary(job.salary_min, job.salary_max)}</span>}
           <span style={{ padding: '4px 10px', borderRadius: 999, background: `${accent}18`, border: `1px solid ${accent}55`, color: accent, fontFamily: '"JetBrains Mono"', fontSize: 11, fontWeight: 600, boxShadow: isAiMatch ? aiMatchGlow(match) : matchGlow(match), display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             {isAiMatch && <span title="AI-powered match">✦</span>}
@@ -211,12 +211,33 @@ export default function Jobs() {
   ];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 32px', display: 'flex', gap: 28, alignItems: 'flex-start' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 32px', display: 'flex', gap: 28, alignItems: 'flex-start' }} className="hn-jobs-root">
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        @media(max-width:900px){.hn-jobs-sidebar{display:none!important}.hn-jobs-sidebar.open{display:block!important}}
-        @media(max-width:640px){.hn-jobs-main{padding:0!important}}
+        @media(max-width:900px){
+          .hn-jobs-root{flex-direction:column!important;padding:20px 16px!important}
+          .hn-jobs-sidebar{display:none!important;width:100%!important;min-width:unset!important;position:static!important}
+          .hn-jobs-sidebar.open{display:block!important}
+          .hn-mobile-filter-btn{display:flex!important}
+          .hn-jobs-card-circle{display:none!important}
+        }
+        @media(max-width:640px){
+          .hn-jobs-card-bottom{flex-direction:column!important;align-items:flex-start!important}
+          .hn-jobs-card-bottom-right{flex-wrap:wrap!important}
+        }
+        .hn-mobile-filter-btn{display:none}
       `}</style>
+
+      {/* ── Mobile filter toggle ── */}
+      <button className="hn-mobile-filter-btn" onClick={() => setMobileFiltersOpen(o => !o)} style={{
+        display: 'none', position: 'fixed', bottom: 24, right: 24, zIndex: 200,
+        alignItems: 'center', gap: 8, padding: '12px 20px', borderRadius: 999,
+        background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)',
+        color: '#080C14', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer',
+        boxShadow: '0 4px 20px rgba(79,142,247,0.4)',
+      }}>
+        ⚙ {mobileFiltersOpen ? 'Close' : 'Filters'}
+      </button>
 
       {/* ── SIDEBAR ── */}
       <aside className={`hn-jobs-sidebar${mobileFiltersOpen ? ' open' : ''}`} style={{
