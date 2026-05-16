@@ -1,8 +1,6 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { SURFACE, BTN_PRIMARY } from '../lib/design';
-import { usePageTitle } from '../lib/usePageTitle';
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -13,10 +11,6 @@ export default function Signup() {
   const [role, setRole] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const INPUT = { padding: '11px 14px', borderRadius: 10, background: '#161D2E', border: '1px solid rgba(255,255,255,0.10)', color: '#F0F4FF', fontSize: 14, outline: 'none', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit', transition: 'border-color 0.15s ease' };
-  const focus = e => e.target.style.borderColor = '#4F8EF7';
-  const blur = e => e.target.style.borderColor = 'rgba(255,255,255,0.10)';
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,61 +23,65 @@ export default function Signup() {
     navigate(role === 'recruiter' ? '/recruiter/dashboard' : '/dashboard');
   }
 
-  return (
-    <div style={{ minHeight: '100vh', background: '#080C14', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: -100, right: '20%', width: 600, height: 600, background: 'radial-gradient(circle, rgba(0,194,168,0.07) 0%, transparent 60%)', pointerEvents: 'none' }} />
+  const inputCls = "w-full h-input-height px-3 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-base text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors";
 
-      <div style={{ ...SURFACE, width: '100%', maxWidth: 460, padding: 40 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M2 11L5.5 5L7.5 8.5L10 6L13 11" stroke="#080C14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </div>
-          <span style={{ color: '#F0F4FF', fontWeight: 700, fontSize: 16 }}>HireOnyx</span>
+  return (
+    <div className="min-h-screen bg-page-bg dark:bg-[#1b1c1a] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-[420px] bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-xl p-8">
+        {/* Logo */}
+        <div className="mb-8">
+          <Link to="/" className="font-bold text-headline-md text-text-primary dark:text-inverse-on-surface no-underline">
+            HireOnyx
+          </Link>
         </div>
 
-        <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em', color: '#F0F4FF', margin: '0 0 8px' }}>Create your account</h1>
-        <p style={{ color: '#94A3B8', fontSize: 14, margin: '0 0 28px' }}>Join thousands hiring and being hired on HireOnyx.</p>
+        <h1 className="font-bold text-[24px] text-text-primary dark:text-inverse-on-surface mb-1">Create your account</h1>
+        <p className="text-body-sm text-text-secondary dark:text-text-muted mb-7">Join thousands hiring and being hired on HireOnyx.</p>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Full name" required style={INPUT} onFocus={focus} onBlur={blur} />
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required style={INPUT} onFocus={focus} onBlur={blur} />
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min. 6 chars)" required style={INPUT} onFocus={focus} onBlur={blur} />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">Full name</label>
+            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Jane Smith" required className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" required className={inputCls} />
+          </div>
 
           {/* Role selector */}
           <div>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#94A3B8', marginBottom: 12 }}>I am a</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-2">I am a</label>
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { value: 'seeker', label: 'Job Seeker', desc: "I'm looking for a job", accent: '#4F8EF7' },
-                { value: 'recruiter', label: 'Recruiter', desc: 'I want to hire talent', accent: '#4F8EF7' },
+                { value: 'seeker', label: 'Job Seeker', desc: "I'm looking for a job" },
+                { value: 'recruiter', label: 'Recruiter', desc: 'I want to hire talent' },
               ].map(opt => (
-                <button key={opt.value} type="button" onClick={() => setRole(opt.value)} style={{
-                  padding: '16px 14px', borderRadius: 12, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
-                  background: role === opt.value ? '#161D2E' : '#161D2E',
-                  border: role === opt.value ? `1px solid ${opt.accent}` : '1px solid rgba(255,255,255,0.08)',
-                  borderTop: role === opt.value ? `3px solid ${opt.accent}` : '3px solid transparent',
-                  transition: 'all 0.15s ease',
-                }}>
-                  <div style={{ color: '#94A3B8', fontSize: 12, marginBottom: 4 }}>{opt.desc}</div>
-                  <div style={{ color: role === opt.value ? opt.accent : '#F0F4FF', fontSize: 14, fontWeight: 600 }}>{opt.label}</div>
+                <button key={opt.value} type="button" onClick={() => setRole(opt.value)}
+                  className={`p-4 rounded-lg text-left border-2 transition-all cursor-pointer ${role === opt.value
+                    ? 'border-primary bg-accent-light dark:bg-accent-light/10'
+                    : 'border-border-default dark:border-outline-variant hover:border-primary/40'}`}>
+                  <div className="text-body-sm text-text-secondary dark:text-text-muted mb-1">{opt.desc}</div>
+                  <div className={`font-semibold text-body-base ${role === opt.value ? 'text-primary' : 'text-text-primary dark:text-inverse-on-surface'}`}>{opt.label}</div>
                 </button>
               ))}
             </div>
           </div>
 
-          {error && <p style={{ color: '#E05252', fontSize: 13, margin: 0 }}>{error}</p>}
+          {error && <p className="text-body-sm text-error">{error}</p>}
 
-          <button type="submit" disabled={loading || !role} style={{
-            ...BTN_PRIMARY, padding: 13, marginTop: 4,
-            opacity: (!role || loading) ? 0.5 : 1,
-            cursor: (!role || loading) ? 'not-allowed' : 'pointer',
-          }}>
+          <button type="submit" disabled={loading || !role}
+            className="w-full h-10 bg-primary-container text-white text-button-text font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 mt-1">
             {loading ? 'Creating account…' : 'Create Account'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', color: '#94A3B8', fontSize: 13, marginTop: 24 }}>
-          Already have an account? <Link to="/login" style={{ color: '#4F8EF7', fontWeight: 500 }}>Sign in</Link>
+        <p className="text-center text-body-sm text-text-secondary dark:text-text-muted mt-6">
+          Already have an account?{' '}
+          <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

@@ -2,26 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Global mobile resets ── */
 * { box-sizing: border-box; }
 
 html, body {
+  font-family: 'Inter', sans-serif;
   overflow-x: hidden;
-  -webkit-text-size-adjust: 100%;
 }
 
-/* Prevent long words from breaking layout */
-p, h1, h2, h3, h4, span, div {
-  word-break: break-word;
-  overflow-wrap: break-word;
+body {
+  background-color: #F4F3EF;
+  color: #0D0D0C;
 }
 
-/* Better touch targets on mobile */
-@media (max-width: 768px) {
-  button, a { min-height: 36px; }
-  /* Ensure page padding on mobile */
-  [style*="padding: '40px 32px'"] { padding: 24px 16px !important; }
+html.dark body {
+  background-color: #1b1c1a;
+  color: #f2f1ed;
 }
 
-/* Smooth scrolling */
-html { scroll-behavior: smooth; }
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  font-size: 20px;
+  line-height: 1;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F4F3EF; }
+::-webkit-scrollbar-thumb { background: #E4E4E0; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #C9C9C4; }

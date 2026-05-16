@@ -8,24 +8,8 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const [resumeText, setResumeText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [focused, setFocused] = useState('');
 
-  const textareaStyle = (field) => ({
-    width: '100%',
-    background: 'var(--bg-subtle)',
-    border: `1px solid ${focused === field ? 'var(--accent)' : 'var(--border)'}`,
-    borderRadius: '6px',
-    color: 'var(--text-primary)',
-    padding: '10px 14px',
-    fontSize: '14px',
-    fontFamily: field === 'resume' ? '"JetBrains Mono", monospace' : '"DM Sans", sans-serif',
-    outline: 'none',
-    boxSizing: 'border-box',
-    resize: 'vertical',
-    lineHeight: 1.7,
-    boxShadow: focused === field ? '0 0 0 3px var(--accent-glow)' : 'none',
-    transition: 'all 0.15s ease',
-  });
+  const textareaCls = "w-full px-3 py-2.5 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-base text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-vertical leading-relaxed";
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -56,71 +40,57 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      background: 'rgba(0,0,0,0.7)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '24px',
-    }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        padding: '32px',
-        width: '100%',
-        maxWidth: '560px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px' }}>
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4 py-6"
+      onClick={e => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-xl p-8">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h2 style={{ fontFamily: '"DM Sans"', fontWeight: 600, fontSize: '20px', color: 'var(--text-primary)', margin: 0 }}>
-              Apply for {job.title}
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '4px 0 0' }}>{job.company}</p>
+            <h2 className="font-semibold text-[20px] text-text-primary dark:text-inverse-on-surface">Apply for {job.title}</h2>
+            <p className="text-body-sm text-text-secondary dark:text-text-muted mt-1">{job.company}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '20px', cursor: 'pointer', padding: '0', lineHeight: 1 }}>×</button>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors text-[22px] leading-none ml-4 flex-shrink-0">&times;</button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
-            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-              Cover Letter <span style={{ color: 'var(--text-muted)' }}>(optional)</span>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">
+              Cover Letter <span className="normal-case text-[11px] text-text-muted font-normal tracking-normal">(optional)</span>
             </label>
-            <textarea rows={4} value={coverLetter} onChange={e => setCoverLetter(e.target.value)}
+            <textarea
+              rows={4}
+              value={coverLetter}
+              onChange={e => setCoverLetter(e.target.value)}
               placeholder="Tell us why you're a great fit..."
-              style={textareaStyle('cover')}
-              onFocus={() => setFocused('cover')} onBlur={() => setFocused('')}
+              className={textareaCls}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
-              Your Resume <span style={{ color: 'var(--accent)' }}>*</span>
+            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">
+              Your Resume <span className="text-primary">*</span>
             </label>
-            <textarea rows={8} value={resumeText} onChange={e => setResumeText(e.target.value)}
+            <textarea
+              rows={8}
+              value={resumeText}
+              onChange={e => setResumeText(e.target.value)}
               placeholder="Paste the full text of your resume here..."
-              style={textareaStyle('resume')}
-              onFocus={() => setFocused('resume')} onBlur={() => setFocused('')}
+              className={`${textareaCls} font-mono text-[13px]`}
             />
           </div>
 
-          {error && <p style={{ color: 'var(--status-rejected-text)', fontSize: '13px', margin: 0 }}>{error}</p>}
+          {error && <p className="text-body-sm text-error">{error}</p>}
 
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button type="button" onClick={onClose} style={{
-              background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)',
-              padding: '10px 20px', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer',
-            }}>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="px-5 py-2.5 border border-border-default dark:border-outline-variant text-text-primary dark:text-inverse-on-surface text-body-sm font-medium rounded-lg hover:bg-surface-container-low transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={loading} style={{
-              background: loading ? 'var(--accent-dim)' : 'var(--accent)',
-              color: 'var(--text-inverse)', border: 'none', borderRadius: '6px',
-              padding: '10px 24px', fontSize: '14px', fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}>
-              {loading ? 'Submitting...' : 'Submit Application'}
+            <button type="submit" disabled={loading}
+              className="px-6 py-2.5 bg-primary-container text-white text-body-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60">
+              {loading ? 'Submitting…' : 'Submit Application'}
             </button>
           </div>
         </form>

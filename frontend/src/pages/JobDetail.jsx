@@ -2,13 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { SURFACE, LABEL, BTN_PRIMARY, BTN_SECONDARY, matchColor, matchGlow } from '../lib/design';
 import { stableMatch } from '../lib/utils';
 import ApplyModal from '../components/applications/ApplyModal';
-import WhyMatched from '../components/ai/WhyMatched';
 import { formatDate, formatSalary } from '../lib/utils';
-import { usePageTitle } from '../lib/usePageTitle';
-import { getSavedProfile, matchSingleJob, matchColor as aiMatchColor, matchGlow as aiMatchGlow } from '../lib/aiMatchingApi';
+import { getSavedProfile, matchSingleJob } from '../lib/aiMatchingApi';
 import toast from 'react-hot-toast';
 
 const TYPE_LABELS = {
@@ -16,44 +13,63 @@ const TYPE_LABELS = {
   'remote': 'Remote', 'internship': 'Internship', 'contract': 'Contract',
 };
 
-const TYPE_COLORS = {
-  'full-time':  { bg: '#1A3A2A', color: '#4ADE80' },
-  'part-time':  { bg: '#2A2A1A', color: '#FACC15' },
-  'remote':     { bg: '#2A1A3A', color: '#A78BFA' },
-  'internship': { bg: '#1A2A3A', color: '#60A5FA' },
-  'contract':   { bg: '#2A1A1A', color: '#F87171' },
-};
+function ScoreBadge({ score, large }) {
+  const cfg = score >= 90
+    ? { bg: 'bg-score-high-bg', text: 'text-score-high-text', dot: 'bg-score-high-text', border: 'border-green-100' }
+    : score >= 75
+    ? { bg: 'bg-score-mid-bg', text: 'text-score-mid-text', dot: 'bg-score-mid-text', border: 'border-blue-100' }
+    : score >= 60
+    ? { bg: 'bg-score-low-bg', text: 'text-score-low-text', dot: 'bg-score-low-text', border: 'border-amber-100' }
+    : { bg: 'bg-score-none-bg', text: 'text-score-none-text', dot: 'bg-score-none-text', border: 'border-border-default' };
+
+  if (large) {
+    return (
+      <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-xl ${cfg.bg} border ${cfg.border}`}>
+        <div className={`w-2 h-2 rounded-full ${cfg.dot}`}></div>
+        <span className={`font-mono font-bold text-[28px] leading-none ${cfg.text}`}>{score}<span className="text-[16px] font-normal opacity-60">%</span></span>
+        <span className={`text-body-sm ${cfg.text} opacity-80`}>match</span>
+      </div>
+    );
+  }
+  return (
+    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full ${cfg.bg} border ${cfg.border}`}>
+      <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></div>
+      <span className={`font-mono text-data-label ${cfg.text}`}>{score}%</span>
+    </div>
+  );
+}
 
 function TypeBadge({ type }) {
-  const cfg = TYPE_COLORS[type] || { bg: '#1C2438', color: '#94A3B8' };
   return (
-    <span style={{
-      padding: '4px 12px', borderRadius: 999,
-      background: cfg.bg, color: cfg.color,
-      fontFamily: '"JetBrains Mono", monospace',
-      fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em',
-    }}>{TYPE_LABELS[type] || type}</span>
+    <span className="px-2.5 py-1 text-[11px] font-mono font-semibold uppercase tracking-wider border border-border-default dark:border-outline-variant text-text-secondary dark:text-text-muted rounded-full">
+      {TYPE_LABELS[type] || type}
+    </span>
+  );
+}
+
+function SectionCard({ title, children }) {
+  return (
+    <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-6">
+      <h3 className="text-data-label text-text-muted uppercase tracking-widest mb-4">{title}</h3>
+      {children}
+    </div>
   );
 }
 
 function SkeletonDetail() {
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-      <div style={{ height: 13, width: 200, background: '#161D2E', borderRadius: 6, marginBottom: 32, animation: 'pulse 1.5s infinite' }} />
-      <div style={{ display: 'flex', gap: 32 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ height: 36, width: '60%', background: '#161D2E', borderRadius: 8, marginBottom: 16, animation: 'pulse 1.5s infinite' }} />
-          <div style={{ height: 14, width: '40%', background: '#161D2E', borderRadius: 6, marginBottom: 32, animation: 'pulse 1.5s infinite' }} />
-          {[100, 85, 90, 70, 95].map((w, i) => (
-            <div key={i} style={{ height: 13, width: `${w}%`, background: '#161D2E', borderRadius: 5, marginBottom: 10, animation: 'pulse 1.5s infinite' }} />
-          ))}
-        </div>
-        <div style={{ width: 280, background: '#0F1520', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 16, padding: 24 }}>
-          <div style={{ height: 44, background: '#161D2E', borderRadius: 10, marginBottom: 20, animation: 'pulse 1.5s infinite' }} />
-          <div style={{ height: 13, width: '80%', background: '#161D2E', borderRadius: 5, animation: 'pulse 1.5s infinite' }} />
+    <div className="max-w-3xl mx-auto px-margin-page py-10 animate-pulse">
+      <div className="h-4 bg-surface-container-high dark:bg-surface-container rounded w-40 mb-8"></div>
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-11 h-11 rounded-lg bg-surface-container-high dark:bg-surface-container"></div>
+        <div className="space-y-2">
+          <div className="h-3 bg-surface-container-high dark:bg-surface-container rounded w-28"></div>
+          <div className="h-6 bg-surface-container-high dark:bg-surface-container rounded w-64"></div>
         </div>
       </div>
+      {[100, 85, 90, 70, 95].map((w, i) => (
+        <div key={i} className="h-4 bg-surface-container-high dark:bg-surface-container rounded mb-3" style={{ width: `${w}%` }}></div>
+      ))}
     </div>
   );
 }
@@ -69,8 +85,6 @@ export default function JobDetail() {
   const [aiMatch, setAiMatch] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  usePageTitle(job ? `${job.title} at ${job.company}` : 'Job Detail');
-
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -81,7 +95,6 @@ export default function JobDetail() {
         .from('jobs').select('*').eq('id', id).single();
 
       if (cancelled) return;
-
       if (error || !jobData) { setNotFound(true); setLoading(false); return; }
       setJob(jobData);
 
@@ -91,13 +104,12 @@ export default function JobDetail() {
           .eq('job_id', id).eq('seeker_id', user.id).maybeSingle();
         if (!cancelled) setApplication(appData);
 
-        // AI match — only if seeker has uploaded resume
         const savedProfile = getSavedProfile();
         if (savedProfile && !cancelled) {
           setAiLoading(true);
           matchSingleJob(savedProfile, jobData)
             .then((m) => { if (!cancelled) setAiMatch(m); })
-            .catch(() => {/* silent fail */})
+            .catch(() => {})
             .finally(() => { if (!cancelled) setAiLoading(false); });
         }
       }
@@ -110,200 +122,187 @@ export default function JobDetail() {
   if (loading) return <SkeletonDetail />;
 
   if (notFound) return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 32px', textAlign: 'center' }}>
-      <div style={{ fontSize: 56, marginBottom: 16 }}>🔍</div>
-      <h2 style={{ color: '#F0F4FF', fontSize: 24, fontWeight: 600, margin: '0 0 10px' }}>Job not found</h2>
-      <p style={{ color: '#94A3B8', marginBottom: 28 }}>This role may have been removed or the link is incorrect.</p>
-      <Link to="/jobs" style={{ ...BTN_PRIMARY, padding: '11px 24px', display: 'inline-flex', gap: 8 }}>Browse all roles</Link>
+    <div className="max-w-3xl mx-auto px-margin-page py-20 text-center">
+      <span className="material-symbols-outlined text-[64px] text-border-strong block mb-4">search_off</span>
+      <h2 className="font-bold text-[22px] text-text-primary dark:text-inverse-on-surface mb-2">Job not found</h2>
+      <p className="text-text-secondary dark:text-text-muted mb-8">This role may have been removed or the link is incorrect.</p>
+      <Link to="/jobs" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-container text-white rounded-lg font-medium">
+        Browse all roles
+      </Link>
     </div>
   );
 
   const salary = formatSalary(job.salary_min, job.salary_max);
-  // Use real AI match score if available, fallback to deterministic hash
   const match = aiMatch?.matchScore ?? stableMatch(job.id);
-  const isAiMatch = !!aiMatch?.matchScore;
-  const accent = isAiMatch ? aiMatchColor(match) : matchColor(match);
+  const initial = job.company?.[0]?.toUpperCase() || '?';
 
   function ApplySection() {
-    // Recruiter who posted this job
     if (profile?.role === 'recruiter' && profile?.id === job.recruiter_id) {
       return (
-        <div style={{ padding: '16px 20px', background: '#161D2E', borderRadius: 12, textAlign: 'center' }}>
-          <span style={{ color: '#94A3B8', fontSize: 13 }}>You posted this role</span>
+        <div className="px-4 py-3 bg-surface-container-low dark:bg-surface-container rounded-lg text-center text-body-sm text-text-secondary">
+          You posted this role
         </div>
       );
     }
-    // Any recruiter shouldn't see apply
     if (profile?.role === 'recruiter') return null;
-
-    // Not logged in
     if (!user) {
       return (
-        <Link to="/login" style={{
-          display: 'block', textAlign: 'center',
-          padding: '13px', borderRadius: 10,
-          border: '1px solid rgba(255,255,255,0.18)', color: '#F0F4FF',
-          fontSize: 14, fontWeight: 500,
-        }}>Sign in to Apply</Link>
+        <Link to="/login"
+          className="block text-center px-4 py-2.5 border border-border-default dark:border-outline-variant rounded-lg text-body-base font-medium text-text-primary dark:text-inverse-on-surface hover:bg-surface-container-low transition-colors">
+          Sign in to Apply
+        </Link>
       );
     }
-
-    // Already applied
     if (application) {
       return (
-        <div style={{
-          padding: '16px', borderRadius: 10, textAlign: 'center',
-          background: 'rgba(0,194,168,0.08)', border: '1px solid rgba(0,194,168,0.25)',
-        }}>
-          <div style={{ color: '#00C2A8', fontWeight: 600, fontSize: 14, marginBottom: 4 }}>✓ Application Submitted</div>
-          <div style={{ color: '#4B5563', fontSize: 12 }}>{formatDate(application.applied_at)}</div>
+        <div className="px-4 py-3 bg-score-high-bg border border-green-100 rounded-lg text-center">
+          <div className="text-score-high-text font-semibold text-body-base mb-1">Application Submitted</div>
+          <div className="text-text-secondary text-body-sm">{formatDate(application.applied_at)}</div>
         </div>
       );
     }
-
-    // Apply now
     return (
-      <button onClick={() => setModalOpen(true)} style={{
-        ...BTN_PRIMARY, width: '100%', padding: '13px', fontSize: 15,
-      }}>
+      <button onClick={() => setModalOpen(true)}
+        className="w-full py-2.5 bg-primary-container text-white font-medium text-button-text rounded-lg hover:opacity-90 transition-opacity">
         Apply Now
       </button>
     );
   }
 
   return (
-    <div className="jd-root" style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }}>
+    <div className="max-w-3xl mx-auto px-margin-page py-10">
       {/* Breadcrumb */}
-      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Link to="/jobs" style={{ color: '#4B5563', fontSize: 13 }}>Jobs</Link>
-        <span style={{ color: '#4B5563' }}>›</span>
-        <span style={{ color: '#94A3B8', fontSize: 13 }}>{job.title}</span>
+      <div className="flex items-center gap-2 mb-8 text-body-sm">
+        <Link to="/jobs" className="text-text-secondary dark:text-text-muted hover:text-primary transition-colors">Jobs</Link>
+        <span className="material-symbols-outlined text-[14px] text-text-muted">chevron_right</span>
+        <span className="text-text-primary dark:text-inverse-on-surface font-medium">{job.title}</span>
       </div>
 
-      <div className="jd-layout" style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
-        {/* ── LEFT: Main content ── */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Company row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: 14, flexShrink: 0,
-              background: 'linear-gradient(135deg, #161D2E 0%, #1C2438 100%)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#94A3B8', fontSize: 20, fontWeight: 700,
-            }}>{job.company?.[0]}</div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: '#94A3B8', fontSize: 14 }}>{job.company}</span>
-                <span style={{ color: '#10B981', fontSize: 12, display: 'flex', alignItems: 'center', gap: 3 }}>
-                  ✓ Verified
-                </span>
-              </div>
-              <h1 style={{ color: '#F0F4FF', fontSize: 32, fontWeight: 700, letterSpacing: '-0.02em', margin: '2px 0 0', lineHeight: 1.2 }}>
-                {job.title}
-              </h1>
-            </div>
-          </div>
-
-          {/* Meta row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', marginBottom: 32, color: '#94A3B8', fontSize: 13 }}>
-            <span>📍 {job.location}</span>
-            <TypeBadge type={job.type} />
-            {salary && <span style={{ color: '#F0F4FF', fontWeight: 600, fontSize: 14 }}>{salary}</span>}
-          </div>
-
-          {/* About the role */}
-          <div style={{ ...SURFACE, padding: '24px', marginBottom: 16 }}>
-            <div style={{ ...LABEL, marginBottom: 14 }}>About the role</div>
-            <p style={{ color: '#F0F4FF', fontSize: 15, lineHeight: 1.8, margin: 0, whiteSpace: 'pre-wrap' }}>
-              {job.description}
-            </p>
-          </div>
-
-          {/* Requirements */}
-          {job.requirements && (
-            <div style={{ ...SURFACE, padding: '24px', marginBottom: 16 }}>
-              <div style={{ ...LABEL, marginBottom: 14 }}>Requirements</div>
-              <p style={{ color: '#94A3B8', fontSize: 14, lineHeight: 1.8, margin: 0, whiteSpace: 'pre-wrap' }}>
-                {job.requirements}
-              </p>
-            </div>
-          )}
-
-          {/* Skills */}
-          {job.skills_required?.length > 0 && (
-            <div style={{ ...SURFACE, padding: '24px' }}>
-              <div style={{ ...LABEL, marginBottom: 14 }}>Required skills</div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {job.skills_required.map(skill => (
-                  <span key={skill} style={{
-                    padding: '6px 14px', borderRadius: 999,
-                    background: '#161D2E', border: '1px solid rgba(255,255,255,0.10)',
-                    color: '#F0F4FF', fontFamily: '"JetBrains Mono", monospace', fontSize: 12, fontWeight: 500,
-                  }}>{skill}</span>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* Header */}
+      <div className="flex items-start gap-4 mb-6">
+        <div className="w-11 h-11 flex items-center justify-center font-bold text-lg rounded-lg bg-accent-light text-primary border border-border-default flex-shrink-0">
+          {initial}
         </div>
-
-        {/* ── RIGHT: Sticky sidebar ── */}
-        <div className="jd-sidebar" style={{ width: 320, flexShrink: 0, position: 'sticky', top: 76, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Match score card */}
-          <div style={{ ...SURFACE, padding: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <div style={LABEL}>Your match</div>
-              <span style={{
-                padding: '3px 10px', borderRadius: 999,
-                background: `${accent}18`, border: `1px solid ${accent}55`,
-                color: accent, fontFamily: '"JetBrains Mono", monospace',
-                fontSize: 11, fontWeight: 600, boxShadow: matchGlow(match),
-              }}>{match}% match</span>
-            </div>
-            <div style={{
-              fontSize: 56, fontWeight: 700, letterSpacing: '-0.02em',
-              color: accent, fontFamily: '"JetBrains Mono", monospace', lineHeight: 1, marginBottom: 8,
-            }}>
-              {match}<span style={{ fontSize: 24, color: '#4B5563', fontWeight: 400 }}>%</span>
-            </div>
-            <p style={{ color: '#94A3B8', fontSize: 13, lineHeight: 1.6, margin: 0 }}>
-              Based on role requirements and skill alignment.
-            </p>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '20px 0' }} />
-            <ApplySection />
-            <button style={{ ...BTN_SECONDARY, width: '100%', padding: '11px', marginTop: 10, fontSize: 14 }}>
-              Save for later
-            </button>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-body-sm text-text-secondary dark:text-text-muted">{job.company}</span>
+            <span className="flex items-center gap-1 text-score-high-text text-[12px] font-medium">
+              <span className="material-symbols-outlined text-[14px]">verified</span>
+              Verified
+            </span>
           </div>
+          <h1 className="font-bold text-[28px] tracking-tight text-text-primary dark:text-inverse-on-surface leading-tight">{job.title}</h1>
+        </div>
+      </div>
 
-          {/* AI Match Analysis — shows when seeker has uploaded resume */}
-          {profile?.role === 'seeker' && (aiLoading || aiMatch) && (
-            <WhyMatched match={aiMatch} loading={aiLoading} />
-          )}
+      {/* Meta row */}
+      <div className="flex items-center gap-4 flex-wrap mb-8 text-body-sm text-text-secondary dark:text-text-muted">
+        <div className="flex items-center gap-1">
+          <span className="material-symbols-outlined text-[14px]">location_on</span>
+          {job.location}
+        </div>
+        <TypeBadge type={job.type} />
+        {salary && (
+          <div className="flex items-center gap-1 font-medium text-text-primary dark:text-inverse-on-surface">
+            <span className="material-symbols-outlined text-[14px]">payments</span>
+            {salary}
+          </div>
+        )}
+        <span className="text-text-muted">Posted {formatDate(job.created_at)}</span>
+      </div>
 
-          {/* Job details */}
-          <div style={{ ...SURFACE, padding: '24px' }}>
-            <div style={{ ...LABEL, marginBottom: 14 }}>Job details</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[
-                { label: 'Type', value: TYPE_LABELS[job.type] || job.type },
-                { label: 'Location', value: job.location },
-                { label: 'Posted', value: formatDate(job.created_at) },
-                ...(salary ? [{ label: 'Salary', value: salary }] : []),
-              ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ color: '#4B5563', fontSize: 12, fontFamily: '"JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>{label}</span>
-                  <span style={{ color: '#94A3B8', fontSize: 13, textAlign: 'right' }}>{value}</span>
-                </div>
+      {/* Action bar card */}
+      <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <ScoreBadge score={match} large />
+          {aiLoading && <span className="text-body-sm text-text-secondary">Calculating AI match…</span>}
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex-1 sm:flex-none sm:w-36">
+            <ApplySection />
+          </div>
+          <button className="flex items-center gap-1 px-3 py-2.5 border border-border-default dark:border-outline-variant rounded-lg text-text-secondary dark:text-text-muted hover:text-primary transition-colors">
+            <span className="material-symbols-outlined text-[18px]">bookmark</span>
+          </button>
+        </div>
+      </div>
+
+      {/* About the role */}
+      <div className="space-y-4">
+        <SectionCard title="About the role">
+          <p className="text-body-base text-text-primary dark:text-inverse-on-surface leading-relaxed whitespace-pre-wrap">{job.description}</p>
+        </SectionCard>
+
+        {job.requirements && (
+          <SectionCard title="Requirements">
+            <div className="text-body-base text-text-secondary dark:text-text-muted leading-relaxed whitespace-pre-wrap">{job.requirements}</div>
+          </SectionCard>
+        )}
+
+        {job.skills_required?.length > 0 && (
+          <SectionCard title="Required Skills">
+            <div className="flex flex-wrap gap-2">
+              {job.skills_required.map(skill => (
+                <span key={skill} className="px-3 py-1.5 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-full font-mono text-[12px] text-text-primary dark:text-inverse-on-surface">
+                  {skill}
+                </span>
               ))}
             </div>
+          </SectionCard>
+        )}
+
+        {/* AI Match Analysis */}
+        {profile?.role === 'seeker' && aiMatch && (
+          <SectionCard title="AI Match Analysis">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {aiMatch.strengths?.length > 0 && (
+                <div>
+                  <div className="text-data-label text-score-high-text uppercase tracking-widest mb-2">Strengths</div>
+                  <ul className="space-y-1">
+                    {aiMatch.strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-body-sm text-text-secondary dark:text-text-muted">
+                        <span className="material-symbols-outlined text-score-high-text text-[14px] mt-0.5 flex-shrink-0">check_circle</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {aiMatch.missingSkills?.length > 0 && (
+                <div>
+                  <div className="text-data-label text-score-low-text uppercase tracking-widest mb-2">Gaps</div>
+                  <ul className="space-y-1">
+                    {aiMatch.missingSkills.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2 text-body-sm text-text-secondary dark:text-text-muted">
+                        <span className="material-symbols-outlined text-score-low-text text-[14px] mt-0.5 flex-shrink-0">cancel</span>
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Job Details */}
+        <SectionCard title="Job Details">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {[
+              { label: 'Type', value: TYPE_LABELS[job.type] || job.type },
+              { label: 'Location', value: job.location },
+              { label: 'Posted', value: formatDate(job.created_at) },
+              ...(salary ? [{ label: 'Salary', value: salary }] : []),
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <div className="text-data-label text-text-muted uppercase tracking-widest mb-1">{label}</div>
+                <div className="text-body-base text-text-primary dark:text-inverse-on-surface">{value}</div>
+              </div>
+            ))}
           </div>
-        </div>
+        </SectionCard>
       </div>
 
-      {/* AI Resume Analyzer — coming soon */}
-
-      {/* Apply Modal */}
       {modalOpen && (
         <ApplyModal
           job={job}
@@ -315,18 +314,6 @@ export default function JobDetail() {
           }}
         />
       )}
-
-      <style>{`
-        @media (max-width: 1024px) {
-          .jd-layout { flex-direction: column !important; }
-          .jd-sidebar { width: 100% !important; position: static !important; }
-        }
-        @media (max-width: 640px) {
-          .jd-root { padding: 24px 16px !important; }
-          .jd-layout { gap: 20px !important; }
-          .jd-sidebar { width: 100% !important; }
-        }
-      `}</style>
     </div>
   );
 }

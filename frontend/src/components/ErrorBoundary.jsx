@@ -10,24 +10,17 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{
-          minHeight: '60vh', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', padding: '40px 24px', textAlign: 'center',
-        }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>⚠</div>
-          <h2 style={{ color: '#F0F4FF', fontSize: 22, fontWeight: 600, margin: '0 0 10px' }}>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center px-margin-page py-10 text-center">
+          <span className="material-symbols-outlined text-[48px] text-border-strong mb-4">warning</span>
+          <h2 className="font-bold text-[22px] text-text-primary dark:text-inverse-on-surface mb-2">
             Something went wrong
           </h2>
-          <p style={{ color: '#94A3B8', fontSize: 14, marginBottom: 24, maxWidth: 420 }}>
+          <p className="text-text-secondary dark:text-text-muted text-body-base mb-8 max-w-md">
             An unexpected error occurred. Refresh the page to continue.
           </p>
           <button
             onClick={() => window.location.reload()}
-            style={{
-              padding: '10px 24px', borderRadius: 10,
-              background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)',
-              color: '#080C14', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer',
-            }}
+            className="px-6 py-2.5 bg-primary-container text-white text-button-text font-medium rounded-lg hover:opacity-90 transition-opacity"
           >
             Refresh page
           </button>

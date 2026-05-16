@@ -2,22 +2,16 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer style={{
-      background: '#080C14',
-      borderTop: '1px solid rgba(255,255,255,0.06)',
-      padding: '20px 32px',
-      marginTop: 'auto',
-    }}>
-      <div style={{
-        maxWidth: 1280, margin: '0 auto',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 12,
-      }}>
-        <span style={{ color: '#4B5563', fontSize: 13 }}>© 2026 HireOnyx. Built for serious hiring.</span>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {['Jobs', 'Privacy', 'Terms'].map(l => (
-            <Link key={l} to="/" style={{ color: '#4B5563', fontSize: 13 }}>{l}</Link>
-          ))}
+    <footer className="bg-surface-container-lowest dark:bg-inverse-surface border-t border-border-default dark:border-outline-variant">
+      <div className="flex flex-col md:flex-row justify-between items-center py-6 px-margin-page w-full max-w-7xl mx-auto gap-4">
+        <div className="flex flex-col items-center md:items-start gap-1">
+          <span className="font-bold text-body-base text-text-primary dark:text-inverse-on-surface">HireOnyx</span>
+          <p className="text-body-sm text-text-secondary dark:text-text-muted">© 2024 HireOnyx. All rights reserved.</p>
+        </div>
+        <div className="flex items-center gap-6 text-body-sm">
+          <a href="#" className="text-text-secondary dark:text-text-muted hover:text-primary transition-colors underline">Privacy</a>
+          <a href="#" className="text-text-secondary dark:text-text-muted hover:text-primary transition-colors underline">Terms</a>
+          <a href="#" className="text-text-secondary dark:text-text-muted hover:text-primary transition-colors underline">Cookie Policy</a>
         </div>
       </div>
     </footer>

@@ -9,39 +9,36 @@
  *   loading {boolean}
  */
 
-import { SURFACE, LABEL } from '../../lib/design';
 import { matchColor } from '../../lib/aiMatchingApi';
 import MatchBadge from './MatchBadge';
 
 export default function WhyMatched({ match, loading }) {
   if (loading) {
     return (
-      <div style={{ ...SURFACE, padding: 24 }}>
-        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-          <div style={{ width: 20, height: 20, border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#4F8EF7', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-          <span style={{ color: '#94A3B8', fontSize: 14 }}>Analyzing your match…</span>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-5 h-5 border-2 border-border-default border-t-primary rounded-full animate-spin"></div>
+          <span className="text-body-sm text-text-secondary dark:text-text-muted">Analyzing your match…</span>
         </div>
-        {[80, 60, 70].map((w, i) => (
-          <div key={i} style={{ height: 13, width: `${w}%`, background: '#161D2E', borderRadius: 5, marginBottom: 8, animation: 'pulse 1.5s infinite' }} />
-        ))}
+        <div className="space-y-2 animate-pulse">
+          {[80, 60, 70].map((w, i) => (
+            <div key={i} className="h-3 bg-surface-container-high dark:bg-surface-container rounded" style={{ width: `${w}%` }}></div>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!match) return null;
 
-  const color = matchColor(match.matchScore);
-
   return (
-    <div style={{ ...SURFACE, padding: 24 }}>
+    <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-6">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <div style={{ ...LABEL, marginBottom: 6 }}>AI Match Analysis</div>
-          <div style={{ fontSize: 44, fontWeight: 700, color, fontFamily: '"JetBrains Mono"', lineHeight: 1 }}>
-            {match.matchScore}<span style={{ fontSize: 20, color: '#4B5563', fontWeight: 400 }}>%</span>
+          <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">AI Match Analysis</div>
+          <div className="font-mono font-bold text-[40px] leading-none" style={{ color: matchColor(match.matchScore) }}>
+            {match.matchScore}<span className="text-[20px] text-text-muted font-normal">%</span>
           </div>
         </div>
         <MatchBadge score={match.matchScore} showRing size="lg" />
@@ -49,20 +46,20 @@ export default function WhyMatched({ match, loading }) {
 
       {/* Recommendation */}
       {match.recommendation && (
-        <p style={{ color: '#94A3B8', fontSize: 13, lineHeight: 1.7, fontStyle: 'italic', margin: '0 0 20px', borderLeft: `2px solid ${color}`, paddingLeft: 12 }}>
+        <p className="text-body-sm text-text-secondary dark:text-text-muted italic leading-relaxed mb-5 pl-3 border-l-2 border-primary">
           {match.recommendation}
         </p>
       )}
 
       {/* Strengths */}
       {match.strengths?.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ ...LABEL, color: '#00C2A8', marginBottom: 10 }}>Strengths</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div className="mb-4">
+          <div className="text-data-label text-score-high-text uppercase tracking-widest mb-2">Strengths</div>
+          <div className="flex flex-col gap-2">
             {match.strengths.map((s, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <span style={{ color: '#00C2A8', fontWeight: 700, flexShrink: 0 }}>+</span>
-                <span style={{ color: '#00C2A8', fontSize: 13, lineHeight: 1.5 }}>{s}</span>
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-score-high-text font-bold flex-shrink-0">+</span>
+                <span className="text-body-sm text-text-secondary dark:text-text-muted leading-relaxed">{s}</span>
               </div>
             ))}
           </div>
@@ -71,15 +68,13 @@ export default function WhyMatched({ match, loading }) {
 
       {/* Missing skills */}
       {match.missingSkills?.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ ...LABEL, color: '#E05252', marginBottom: 10 }}>Missing skills</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div className="mb-4">
+          <div className="text-data-label text-error uppercase tracking-widest mb-2">Missing skills</div>
+          <div className="flex flex-wrap gap-2">
             {match.missingSkills.map((s, i) => (
-              <span key={i} style={{
-                padding: '4px 10px', borderRadius: 999,
-                background: 'rgba(224,82,82,0.10)', border: '1px solid rgba(224,82,82,0.30)',
-                color: '#E05252', fontFamily: '"JetBrains Mono"', fontSize: 11,
-              }}>{s}</span>
+              <span key={i} className="px-2.5 py-1 bg-error-container/20 border border-error/20 text-error font-mono text-[11px] rounded-full">
+                {s}
+              </span>
             ))}
           </div>
         </div>
@@ -87,14 +82,14 @@ export default function WhyMatched({ match, loading }) {
 
       {/* AI reasoning */}
       {match.reason && (
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
-          <div style={{ ...LABEL, marginBottom: 8 }}>Why this match</div>
-          <p style={{ color: '#94A3B8', fontSize: 13, lineHeight: 1.7, margin: 0 }}>{match.reason}</p>
+        <div className="border-t border-border-default dark:border-outline-variant pt-4">
+          <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">Why this match</div>
+          <p className="text-body-sm text-text-secondary dark:text-text-muted leading-relaxed">{match.reason}</p>
         </div>
       )}
 
       {!match.aiAvailable && (
-        <div style={{ marginTop: 12, fontSize: 11, color: '#4B5563', fontFamily: '"JetBrains Mono"' }}>
+        <div className="mt-3 font-mono text-[11px] text-text-muted">
           * Based on keyword overlap only (AI analysis unavailable)
         </div>
       )}

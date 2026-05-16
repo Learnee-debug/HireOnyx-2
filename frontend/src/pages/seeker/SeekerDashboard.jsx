@@ -1,38 +1,28 @@
-﻿import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { SURFACE, LABEL, matchColor } from '../../lib/design';
 import { daysAgo } from '../../lib/utils';
 import { getSavedProfile } from '../../lib/aiMatchingApi';
 import ResumeUpload from '../../components/ai/ResumeUpload';
+import Footer from '../../components/layout/Footer';
 
-/* Stage config — exact from reference Pages.tsx */
-const stageColor = {
-  applied:   '#6B7280',
-  reviewing: '#4F8EF7',
-  selected:  '#10B981',
-  rejected:  '#E05252',
+const stageConfig = {
+  applied:   { label: 'Applied',     dot: 'bg-text-muted',            text: 'text-text-secondary', bg: 'bg-surface-container-low', border: 'border-border-default' },
+  reviewing: { label: 'In Review',   dot: 'bg-score-mid-text',        text: 'text-score-mid-text', bg: 'bg-score-mid-bg', border: 'border-blue-100' },
+  selected:  { label: 'Interviewing',dot: 'bg-score-high-text',       text: 'text-score-high-text', bg: 'bg-score-high-bg', border: 'border-green-100' },
+  rejected:  { label: 'Rejected',    dot: 'bg-error',                 text: 'text-error', bg: 'bg-error-container/30', border: 'border-error/20' },
 };
-const stageLabel = { applied: 'Applied', reviewing: 'Review', selected: 'Offer', rejected: 'Rejected' };
 
 function StagePill({ status }) {
-  const color = stageColor[status] || '#6B7280';
-  const label = stageLabel[status] || status;
+  const cfg = stageConfig[status] || stageConfig.applied;
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 10px', borderRadius: 999,
-      background: `${color}18`, border: `1px solid ${color}55`,
-      color, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', whiteSpace: 'nowrap',
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: color, boxShadow: `0 0 6px ${color}` }} />
-      {label}
+    <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-data-label font-semibold ${cfg.bg} ${cfg.text} border ${cfg.border}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
+      {cfg.label}
     </span>
   );
 }
-
-const SKELETONS = Array.from({ length: 5 });
 
 export default function SeekerDashboard() {
   const { user, profile } = useAuth();
@@ -49,134 +39,126 @@ export default function SeekerDashboard() {
       .then(({ data }) => { setApps(data || []); setLoading(false); });
   }, [user.id]);
 
-  const stats = [
-    { label: 'Active', value: apps.filter(a => a.status === 'applied').length, color: '#4F8EF7', icon: '↑' },
-    { label: 'In review', value: apps.filter(a => a.status === 'reviewing').length, color: '#4F8EF7', icon: '◆' },
-    { label: 'Interviewing', value: apps.filter(a => a.status === 'selected').length, color: '#00C2A8', icon: '↔' },
-    { label: 'Avg match', value: '—', color: '#8B5CF6', icon: '✦' },
-  ];
+  const appliedCount = apps.filter(a => a.status === 'applied').length;
+  const reviewCount = apps.filter(a => a.status === 'reviewing').length;
+  const interviewCount = apps.filter(a => a.status === 'selected').length;
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '40px 32px' }} className="sd-root">
-      <style>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        @media(max-width:900px){
-          .sd-root{padding:24px 16px!important}
-          .sd-stats{grid-template-columns:repeat(2,1fr)!important}
-          .sd-table-wrap{overflow-x:auto!important}
-          .sd-table-header,.sd-table-row{grid-template-columns:2fr 1fr 1fr auto!important}
-          .sd-col-match{display:none!important}
-        }
-        @media(max-width:480px){
-          .sd-stats{grid-template-columns:repeat(2,1fr)!important}
-          .sd-table-header,.sd-table-row{grid-template-columns:2fr 1fr auto!important}
-          .sd-col-updated{display:none!important}
-        }
-      `}</style>
+    <div className="min-h-screen">
+      <div className="max-w-[1280px] mx-auto px-margin-page pt-10 pb-20">
 
-      {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ ...LABEL, color: '#4F8EF7', marginBottom: 8 }}>Job Seeker</div>
-        <h1 style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-0.02em', color: '#F0F4FF', margin: '0 0 6px' }}>My applications</h1>
-        <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, margin: 0 }}>Track every role you've applied to, with live status from each employer.</p>
-      </div>
-
-      {/* ── AI Resume Upload ── */}
-      <div style={{ marginBottom: 28 }}>
-        {resumeProfile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 20px', borderRadius: 12, background: 'rgba(0,194,168,0.06)', border: '1px solid rgba(0,194,168,0.20)' }}>
-            <span style={{ fontSize: 22 }}>📄</span>
-            <div>
-              <div style={{ color: '#00C2A8', fontWeight: 600, fontSize: 14 }}>
-                Resume active — {resumeProfile.skills.length} skills detected
-              </div>
-              <div style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>
-                AI match scores are shown on job listings. Reupload anytime.
-              </div>
-            </div>
-            <button onClick={() => navigate('/jobs')} style={{
-              marginLeft: 'auto', padding: '7px 16px', borderRadius: 8,
-              background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)',
-              color: '#080C14', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-            }}>Browse matched jobs →</button>
-          </div>
-        ) : (
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
           <div>
-            <div style={{ ...LABEL, marginBottom: 10 }}>AI Match — Upload Your Resume</div>
-            <ResumeUpload compact onParsed={(p) => { setResumeProfile(p); }} />
-            {!resumeProfile && (
-              <p style={{ color: '#4B5563', fontSize: 12, margin: '8px 0 0' }}>
+            <h1 className="font-bold text-[26px] text-text-primary dark:text-inverse-on-surface">My Applications</h1>
+            <div className="flex items-center gap-3 mt-2 text-body-sm text-text-secondary dark:text-text-muted flex-wrap">
+              <span>{apps.length} applied</span>
+              <span>·</span>
+              <span>{reviewCount} in review</span>
+              <span>·</span>
+              <span>{interviewCount} interviewing</span>
+            </div>
+          </div>
+          <Link to="/jobs" className="flex items-center gap-1 text-body-sm font-medium text-primary hover:underline flex-shrink-0">
+            Browse Jobs <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </Link>
+        </div>
+
+        {/* AI Resume Section */}
+        <div className="mb-8">
+          {resumeProfile ? (
+            <div className="flex items-center gap-4 px-5 py-4 bg-score-high-bg border border-green-100 rounded-lg">
+              <span className="material-symbols-outlined text-score-high-text text-[22px]">description</span>
+              <div>
+                <div className="font-semibold text-body-base text-score-high-text">
+                  Resume active — {resumeProfile.skills.length} skills detected
+                </div>
+                <div className="text-body-sm text-text-secondary mt-0.5">
+                  AI match scores shown on all job listings. Re-upload anytime.
+                </div>
+              </div>
+              <Link to="/jobs" className="ml-auto flex items-center gap-1 text-body-sm font-medium text-primary hover:underline flex-shrink-0">
+                Browse matched jobs <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-5">
+              <div className="text-data-label text-text-muted uppercase tracking-widest mb-3">AI Match — Upload Your Resume</div>
+              <ResumeUpload compact onParsed={(p) => { setResumeProfile(p); }} />
+              <p className="text-body-sm text-text-muted mt-3">
                 Upload once to see AI match scores on every job listing. Stored locally, never shared.
               </p>
-            )}
+            </div>
+          )}
+        </div>
+
+        {/* Applications Table */}
+        {loading ? (
+          <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg divide-y divide-border-default dark:divide-outline-variant">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-margin-page py-4 animate-pulse">
+                <div className="w-9 h-9 rounded-lg bg-surface-container-high dark:bg-surface-container flex-shrink-0"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-surface-container-high dark:bg-surface-container rounded w-48"></div>
+                  <div className="h-3 bg-surface-container-high dark:bg-surface-container rounded w-28"></div>
+                </div>
+                <div className="h-6 w-20 bg-surface-container-high dark:bg-surface-container rounded-full"></div>
+              </div>
+            ))}
           </div>
+        ) : apps.length === 0 ? (
+          <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg flex flex-col items-center justify-center py-20 gap-4">
+            <span className="material-symbols-outlined text-[48px] text-border-strong">work_outline</span>
+            <p className="text-body-base text-text-secondary dark:text-text-muted">You haven't applied to anything yet.</p>
+            <button onClick={() => navigate('/jobs')}
+              className="px-6 py-2.5 bg-primary-container text-white rounded-lg text-button-text font-medium hover:opacity-90 transition-opacity">
+              Browse roles
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Column headers */}
+            <div className="hidden md:grid grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] px-margin-page py-2 gap-4 mb-1">
+              {['ROLE', 'COMPANY', 'STAGE', 'APPLIED', ''].map((h, i) => (
+                <span key={i} className="text-data-label text-text-muted uppercase tracking-widest">{h}</span>
+              ))}
+            </div>
+            <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg divide-y divide-border-default dark:divide-outline-variant overflow-hidden">
+              {apps.map(a => {
+                const initial = a.jobs?.company?.[0]?.toUpperCase() || '?';
+                return (
+                  <div key={a.id} onClick={() => navigate(`/jobs/${a.job_id}`)}
+                    className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] items-center px-margin-page py-4 gap-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer group">
+                    {/* Role */}
+                    <div>
+                      <div className="font-medium text-[14px] text-text-primary dark:text-inverse-on-surface group-hover:text-primary transition-colors">{a.jobs?.title}</div>
+                      <div className="text-body-sm text-text-secondary dark:text-text-muted md:hidden">{a.jobs?.company} · {a.jobs?.location}</div>
+                    </div>
+                    {/* Company */}
+                    <div className="hidden md:flex items-center gap-3">
+                      <div className="w-7 h-7 flex items-center justify-center font-bold text-[11px] rounded bg-accent-light text-primary border border-border-default flex-shrink-0">
+                        {initial}
+                      </div>
+                      <span className="text-body-sm text-text-secondary dark:text-text-muted">{a.jobs?.company}</span>
+                    </div>
+                    {/* Stage */}
+                    <div><StagePill status={a.status} /></div>
+                    {/* Applied */}
+                    <div className="hidden md:block font-mono text-[12px] text-text-muted">{daysAgo(a.applied_at)}</div>
+                    {/* Action */}
+                    <div className="hidden md:block">
+                      <span className="text-body-sm font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        View <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
-
-      {/* Stat cards — exact reference layout */}
-      <div className="sd-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
-        {stats.map(s => (
-          <div key={s.label} style={{ ...SURFACE, padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={LABEL}>{s.label}</div>
-              <span style={{ color: s.color, fontSize: 16 }}>{s.icon}</span>
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: '#F0F4FF', letterSpacing: '-0.01em' }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Table */}
-      {loading ? (
-        <div style={SURFACE}>
-          {SKELETONS.map((_, i) => (
-            <div key={i} style={{ padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 16, alignItems: 'center' }}>
-              <div style={{ height: 14, width: 200, background: '#161D2E', borderRadius: 6, animation: 'pulse 1.5s infinite' }} />
-              <div style={{ height: 24, width: 80, background: '#161D2E', borderRadius: 999, animation: 'pulse 1.5s infinite' }} />
-              <div style={{ height: 14, width: 40, background: '#161D2E', borderRadius: 6, animation: 'pulse 1.5s infinite', marginLeft: 'auto' }} />
-            </div>
-          ))}
-        </div>
-      ) : apps.length === 0 ? (
-        <div style={{ ...SURFACE, textAlign: 'center', padding: '64px 0' }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>📋</div>
-          <p style={{ color: '#94A3B8', fontSize: 16, marginBottom: 20 }}>You haven't applied to anything yet.</p>
-          <button onClick={() => navigate('/jobs')} style={{ padding: '11px 24px', borderRadius: 10, background: 'linear-gradient(135deg, #4F8EF7 0%, #00C2A8 100%)', color: '#080C14', fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 0 20px rgba(79,142,247,0.25)' }}>
-            Browse roles →
-          </button>
-        </div>
-      ) : (
-        <div style={SURFACE} className="sd-table-wrap">
-          {/* Table header */}
-          <div className="sd-table-header" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', ...LABEL, minWidth: 480 }}>
-            <div>Role</div>
-            <div>Stage</div>
-            <div className="sd-col-match">Match</div>
-            <div className="sd-col-updated">Updated</div>
-            <div></div>
-          </div>
-
-          {apps.map(a => (
-            <div key={a.id} onClick={() => navigate(`/jobs/${a.job_id}`)} className="sd-table-row" style={{
-              display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', minWidth: 480,
-              padding: '16px 24px', borderBottom: '1px solid rgba(255,255,255,0.04)',
-              alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s ease',
-            }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div>
-                <div style={{ color: '#F0F4FF', fontSize: 15, fontWeight: 500 }}>{a.jobs?.title}</div>
-                <div style={{ color: '#94A3B8', fontSize: 13 }}>{a.jobs?.company}</div>
-              </div>
-              <div><StagePill status={a.status} /></div>
-              <div className="sd-col-match" style={{ color: '#94A3B8', fontFamily: '"JetBrains Mono"', fontSize: 13 }}>—</div>
-              <div className="sd-col-updated" style={{ color: '#4B5563', fontSize: 13 }}>{daysAgo(a.applied_at)}</div>
-              <button style={{ color: '#4F8EF7', fontSize: 13, fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View</button>
-            </div>
-          ))}
-        </div>
-      )}
+      <Footer />
     </div>
   );
 }

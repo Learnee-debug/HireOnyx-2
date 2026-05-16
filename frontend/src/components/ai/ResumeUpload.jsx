@@ -12,7 +12,6 @@
 
 import { useState, useRef } from 'react';
 import { parseResume, saveProfile, clearProfile } from '../../lib/aiMatchingApi';
-import { SURFACE, LABEL } from '../../lib/design';
 
 export default function ResumeUpload({ onParsed, compact = false }) {
   const [state, setState] = useState('idle'); // idle | uploading | done | error
@@ -61,96 +60,73 @@ export default function ResumeUpload({ onParsed, compact = false }) {
   // ── Done state ─────────────────────────────────────────────
   if (state === 'done' && profile) {
     return (
-      <div style={{ ...SURFACE, padding: compact ? '16px 20px' : '20px 24px', borderTop: '2px solid #00C2A8' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span style={{ color: '#00C2A8', fontSize: 18 }}>✓</span>
-              <span style={{ color: '#F0F4FF', fontWeight: 600, fontSize: 14 }}>Resume parsed</span>
-              <span style={{
-                padding: '2px 8px', borderRadius: 999,
-                background: 'rgba(0,194,168,0.12)', border: '1px solid rgba(0,194,168,0.30)',
-                color: '#00C2A8', fontFamily: '"JetBrains Mono"', fontSize: 10, fontWeight: 600,
-              }}>{profile.skills.length} skills found</span>
+      <div className="bg-score-high-bg border border-green-100 rounded-lg p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-score-high-text text-[18px]">check_circle</span>
+              <span className="text-score-high-text font-semibold text-body-base">Resume parsed</span>
+              <span className="px-2 py-0.5 bg-score-high-bg border border-green-100 text-score-high-text font-mono text-[10px] font-semibold rounded-full">
+                {profile.skills.length} skills found
+              </span>
             </div>
             {profile.skills.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              <div className="flex flex-wrap gap-1.5">
                 {profile.skills.slice(0, 12).map((s) => (
-                  <span key={s} style={{
-                    padding: '2px 8px', borderRadius: 999,
-                    background: '#161D2E', border: '1px solid rgba(255,255,255,0.08)',
-                    color: '#94A3B8', fontFamily: '"JetBrains Mono"', fontSize: 10,
-                  }}>{s}</span>
+                  <span key={s} className="px-2 py-0.5 bg-surface-container-low border border-border-default text-text-secondary font-mono text-[11px] rounded-full">
+                    {s}
+                  </span>
                 ))}
                 {profile.skills.length > 12 && (
-                  <span style={{ color: '#4F8EF7', fontSize: 11, fontFamily: '"JetBrains Mono"' }}>
-                    +{profile.skills.length - 12} more
-                  </span>
+                  <span className="text-primary font-mono text-[11px]">+{profile.skills.length - 12} more</span>
                 )}
               </div>
             )}
           </div>
-          <button onClick={handleRemove} style={{
-            background: 'none', border: 'none', color: '#4B5563', cursor: 'pointer',
-            fontSize: 18, lineHeight: 1, padding: '0 4px', flexShrink: 0,
-          }} title="Remove resume">×</button>
+          <button onClick={handleRemove}
+            className="text-text-muted hover:text-text-primary transition-colors text-[20px] leading-none p-1 flex-shrink-0"
+            title="Remove resume">&times;</button>
         </div>
       </div>
     );
   }
 
-  // ── Upload state ───────────────────────────────────────────
+  // ── Upload / idle state ────────────────────────────────────
   return (
     <div
       onClick={() => state !== 'uploading' && inputRef.current?.click()}
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
       onDragLeave={() => setDrag(false)}
       onDrop={handleDrop}
-      style={{
-        ...SURFACE,
-        padding: compact ? '16px 20px' : '24px',
-        borderStyle: 'dashed',
-        borderColor: drag ? '#4F8EF7' : state === 'error' ? '#E05252' : 'rgba(255,255,255,0.14)',
-        borderWidth: 2,
-        borderRadius: 12,
-        cursor: state === 'uploading' ? 'wait' : 'pointer',
-        textAlign: 'center',
-        transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-        boxShadow: drag ? '0 0 0 1px rgba(79,142,247,0.25)' : 'none',
-        background: drag ? 'rgba(79,142,247,0.05)' : '#0F1520',
-      }}
+      className={`rounded-lg border-2 border-dashed transition-all cursor-pointer text-center select-none
+        ${drag ? 'border-primary bg-accent-light/40' : state === 'error' ? 'border-error/40 bg-error/5' : 'border-border-default hover:border-primary/50 bg-surface-card dark:bg-surface-container'}
+        ${compact ? 'p-4' : 'p-6'}`}
+      style={{ cursor: state === 'uploading' ? 'wait' : 'pointer' }}
     >
       <input
         ref={inputRef}
         type="file"
         accept="application/pdf"
-        style={{ display: 'none' }}
+        className="hidden"
         onChange={(e) => handleFile(e.target.files[0])}
       />
 
       {state === 'uploading' ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <div style={{
-            width: 20, height: 20,
-            border: '2px solid rgba(255,255,255,0.10)',
-            borderTopColor: '#4F8EF7',
-            borderRadius: '50%',
-            animation: 'spin 0.7s linear infinite',
-          }} />
-          <span style={{ color: '#94A3B8', fontSize: 14 }}>Parsing resume…</span>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <div className="flex items-center justify-center gap-3">
+          <div className="w-5 h-5 border-2 border-border-default border-t-primary rounded-full animate-spin"></div>
+          <span className="text-body-sm text-text-secondary dark:text-text-muted">Parsing resume…</span>
         </div>
       ) : (
         <>
-          <div style={{ fontSize: compact ? 24 : 32, marginBottom: 8 }}>📄</div>
-          <div style={{ color: '#F0F4FF', fontSize: 14, fontWeight: 500, marginBottom: 4 }}>
+          <span className="material-symbols-outlined text-[32px] text-text-muted block mb-2">description</span>
+          <div className="text-body-base font-medium text-text-primary dark:text-inverse-on-surface mb-1">
             {drag ? 'Drop your resume' : 'Upload your resume'}
           </div>
-          <div style={{ color: '#94A3B8', fontSize: 12 }}>
+          <div className="text-body-sm text-text-secondary dark:text-text-muted">
             PDF only · max 5 MB · drag & drop or click
           </div>
           {state === 'error' && (
-            <div style={{ color: '#E05252', fontSize: 12, marginTop: 8 }}>{error}</div>
+            <div className="text-error text-body-sm mt-2">{error}</div>
           )}
         </>
       )}

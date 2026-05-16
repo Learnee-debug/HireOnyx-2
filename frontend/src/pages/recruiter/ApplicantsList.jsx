@@ -1,12 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import StatusBadge from '../../components/applications/StatusBadge';
 import { formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 
 const STATUSES = ['applied', 'reviewing', 'selected', 'rejected'];
 const STATUS_LABELS = { applied: 'Applied', reviewing: 'Reviewing', selected: 'Selected', rejected: 'Rejected' };
+
+const statusConfig = {
+  applied:   { label: 'Applied',    dot: 'bg-text-muted',      text: 'text-text-secondary', bg: 'bg-surface-container-low', border: 'border-border-default' },
+  reviewing: { label: 'Reviewing',  dot: 'bg-score-low-text',  text: 'text-score-low-text', bg: 'bg-score-low-bg', border: 'border-amber-100' },
+  selected:  { label: 'Selected',   dot: 'bg-score-high-text', text: 'text-score-high-text', bg: 'bg-score-high-bg', border: 'border-green-100' },
+  rejected:  { label: 'Rejected',   dot: 'bg-error',           text: 'text-error', bg: 'bg-error-container/30', border: 'border-error/20' },
+};
+
+function StatusBadge({ status }) {
+  const cfg = statusConfig[status] || statusConfig.applied;
+  return (
+    <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-data-label font-semibold ${cfg.bg} ${cfg.text} border ${cfg.border}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
+      {cfg.label}
+    </span>
+  );
+}
 
 function Drawer({ applicant, onClose, onStatusChange }) {
   const [updating, setUpdating] = useState(false);
@@ -23,91 +39,71 @@ function Drawer({ applicant, onClose, onStatusChange }) {
   return (
     <>
       {/* Backdrop */}
-      <div style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 150,
-      }} onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Drawer */}
-      <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0, width: '480px', maxWidth: '100vw',
-        background: 'var(--bg-surface)', borderLeft: '1px solid var(--border)',
-        zIndex: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column',
-        animation: 'slideIn 0.2s ease',
-      }}>
+      <div className="fixed top-0 right-0 bottom-0 w-[480px] max-w-full bg-surface-card dark:bg-surface-container border-l border-border-default dark:border-outline-variant z-50 overflow-y-auto flex flex-col"
+        style={{ animation: 'slideIn 0.2s ease' }}>
         <style>{`@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}`}</style>
 
         {/* Drawer header */}
-        <div style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div className="p-6 border-b border-border-default dark:border-outline-variant flex items-start justify-between">
           <div>
-            <h2 style={{ fontFamily: '"DM Sans"', fontWeight: 600, fontSize: '20px', color: 'var(--text-primary)', margin: '0 0 4px' }}>
-              {applicant.profiles?.full_name}
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>{applicant.profiles?.email}</p>
-            <p style={{ color: 'var(--text-muted)', fontSize: '12px', margin: '4px 0 0' }}>Applied {formatDate(applicant.applied_at)}</p>
+            <h2 className="font-semibold text-[18px] text-text-primary dark:text-inverse-on-surface">{applicant.profiles?.full_name}</h2>
+            <p className="text-body-sm text-text-secondary dark:text-text-muted mt-0.5">{applicant.profiles?.email}</p>
+            <p className="text-body-sm text-text-muted mt-0.5">Applied {formatDate(applicant.applied_at)}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '22px', cursor: 'pointer', lineHeight: 1, padding: '0' }}>×</button>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors ml-4 flex-shrink-0">
+            <span className="material-symbols-outlined text-[22px]">close</span>
+          </button>
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="p-6 flex-1 flex flex-col gap-6">
           {/* Current status */}
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: '"JetBrains Mono"', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Current Status</div>
+            <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">Current Status</div>
             <StatusBadge status={applicant.status} />
           </div>
 
           {/* Cover letter */}
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: '"JetBrains Mono"', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Cover Letter</div>
+            <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">Cover Letter</div>
             {applicant.cover_letter ? (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: 1.8, fontStyle: 'italic', margin: 0 }}>
+              <p className="text-body-base text-text-secondary dark:text-text-muted leading-relaxed italic">
                 "{applicant.cover_letter}"
               </p>
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>No cover letter provided.</p>
+              <p className="text-body-sm text-text-muted">No cover letter provided.</p>
             )}
           </div>
 
           {/* Resume */}
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: '"JetBrains Mono"', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Resume</div>
-            <div style={{
-              background: 'var(--bg-subtle)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              padding: '16px',
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: '12px',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.8,
-              maxHeight: '300px',
-              overflowY: 'auto',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word',
-            }}>
+            <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">Resume</div>
+            <div className="bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg p-4 font-mono text-[12px] text-text-secondary dark:text-text-muted leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap break-words">
               {applicant.resume_text || 'No resume provided.'}
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button onClick={() => updateStatus('reviewing')} disabled={updating || applicant.status === 'reviewing'} style={{
-            flex: 1, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)',
-            padding: '9px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-            opacity: applicant.status === 'reviewing' ? 0.5 : 1,
-          }}>Mark Reviewing</button>
-          <button onClick={() => updateStatus('selected')} disabled={updating || applicant.status === 'selected'} style={{
-            flex: 1, background: applicant.status === 'selected' ? '#0A2A15' : 'transparent',
-            border: '1px solid var(--status-selected)', color: 'var(--status-selected)',
-            padding: '9px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-            opacity: applicant.status === 'selected' ? 0.7 : 1,
-          }}>Select</button>
-          <button onClick={() => updateStatus('rejected')} disabled={updating || applicant.status === 'rejected'} style={{
-            flex: 1, background: 'transparent', border: '1px solid #3A2A2A', color: 'var(--status-rejected-text)',
-            padding: '9px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-            opacity: applicant.status === 'rejected' ? 0.5 : 1,
-          }}>Reject</button>
+        <div className="p-5 border-t border-border-default dark:border-outline-variant flex gap-2 flex-wrap">
+          <button onClick={() => updateStatus('reviewing')}
+            disabled={updating || applicant.status === 'reviewing'}
+            className="flex-1 py-2.5 border border-border-default dark:border-outline-variant text-text-primary dark:text-inverse-on-surface text-body-sm font-medium rounded-lg hover:bg-surface-container-low transition-colors disabled:opacity-50">
+            Mark Reviewing
+          </button>
+          <button onClick={() => updateStatus('selected')}
+            disabled={updating || applicant.status === 'selected'}
+            className="flex-1 py-2.5 bg-primary-container text-white text-body-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50">
+            Select
+          </button>
+          <button onClick={() => updateStatus('rejected')}
+            disabled={updating || applicant.status === 'rejected'}
+            className="flex-1 py-2.5 border border-error/30 text-error text-body-sm font-medium rounded-lg hover:bg-error/5 transition-colors disabled:opacity-50">
+            Reject
+          </button>
         </div>
       </div>
     </>
@@ -153,103 +149,100 @@ export default function ApplicantsList() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px' }} className="al-root">
-      <style>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-        @media(max-width:900px){
-          .al-root{padding:24px 16px!important}
-          .al-table-wrap{overflow-x:auto!important}
-          .al-table-header,.al-table-row{min-width:520px}
-        }
-      `}</style>
+    <div className="max-w-[1200px] mx-auto px-margin-page py-10">
 
-      {/* Header */}
-      <Link to="/recruiter/dashboard" style={{ color: 'var(--text-muted)', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '24px' }}>
-        ← Back to Dashboard
-      </Link>
+      {/* Breadcrumb + Header */}
+      <div className="flex items-center gap-2 mb-6 text-body-sm">
+        <Link to="/recruiter/dashboard" className="text-text-secondary dark:text-text-muted hover:text-primary transition-colors">Dashboard</Link>
+        <span className="material-symbols-outlined text-[14px] text-text-muted">chevron_right</span>
+        <span className="text-text-primary dark:text-inverse-on-surface font-medium">{job?.title || 'Job'}</span>
+      </div>
 
       {job && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '36px', flexWrap: 'wrap' }}>
-          <h1 style={{ fontFamily: '"DM Sans"', fontWeight: 600, fontSize: '26px', color: 'var(--text-primary)', margin: 0 }}>
-            {job.title}
-          </h1>
-          <span style={{
-            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-            borderRadius: '20px', padding: '4px 12px',
-            fontFamily: '"JetBrains Mono"', fontSize: '12px', color: 'var(--text-secondary)',
-          }}>
+        <div className="flex items-center gap-4 mb-8 flex-wrap">
+          <h1 className="font-bold text-[24px] text-text-primary dark:text-inverse-on-surface">{job.title}</h1>
+          <span className="font-mono text-[12px] text-text-secondary dark:text-text-muted px-3 py-1 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-full uppercase tracking-wider">
             {applicants.length} {applicants.length === 1 ? 'applicant' : 'applicants'}
           </span>
+          <div className="ml-auto flex items-center gap-3">
+            <button className="flex items-center gap-2 px-3 py-2 border border-border-default dark:border-outline-variant text-text-secondary dark:text-text-muted text-body-sm rounded-lg hover:bg-surface-container-low transition-colors">
+              <span className="material-symbols-outlined text-[14px]">tune</span>
+              Filter
+            </button>
+            <button className="flex items-center gap-2 px-3 py-2 border border-border-default dark:border-outline-variant text-text-secondary dark:text-text-muted text-body-sm rounded-lg hover:bg-surface-container-low transition-colors">
+              <span className="material-symbols-outlined text-[14px]">file_download</span>
+              Export
+            </button>
+          </div>
         </div>
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)' }}>
+        <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg divide-y divide-border-default dark:divide-outline-variant">
           {SKELETON.map((_, i) => (
-            <div key={i} style={{ background: 'var(--bg-surface)', padding: '16px 20px', display: 'flex', gap: '24px' }}>
-              {[160, 200, 80, 80, 100].map((w, j) => (
-                <div key={j} style={{ height: '14px', width: `${w}px`, background: 'var(--bg-elevated)', borderRadius: '4px', animation: 'pulse 1.5s infinite' }} />
-              ))}
+            <div key={i} className="flex items-center gap-4 px-margin-page py-4 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-surface-container-high dark:bg-surface-container flex-shrink-0"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-surface-container-high dark:bg-surface-container rounded w-40"></div>
+                <div className="h-3 bg-surface-container-high dark:bg-surface-container rounded w-28"></div>
+              </div>
+              <div className="h-6 w-20 bg-surface-container-high dark:bg-surface-container rounded-full"></div>
             </div>
           ))}
         </div>
       ) : applicants.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 0', background: 'var(--bg-surface)', borderRadius: '10px', border: '1px solid var(--border)' }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>No applicants yet.</p>
+        <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg flex flex-col items-center justify-center py-20 gap-3">
+          <span className="material-symbols-outlined text-[48px] text-border-strong">person_search</span>
+          <p className="text-body-base text-text-secondary dark:text-text-muted">No applicants yet.</p>
         </div>
       ) : (
-        <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden' }} className="al-table-wrap">
-          <div className="al-table-header" style={{
-            display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr', minWidth: 520,
-            padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'var(--bg-elevated)',
-          }}>
-            {['Name', 'Email', 'Applied', 'Status', 'Actions'].map(h => (
-              <span key={h} style={{ fontFamily: '"JetBrains Mono"', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
+        <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg overflow-hidden">
+          {/* Table header */}
+          <div className="hidden md:grid grid-cols-[1.5fr_2fr_1fr_1fr_auto] px-margin-page py-3 bg-surface-container-low dark:bg-surface-container border-b border-border-default dark:border-outline-variant gap-4">
+            {['CANDIDATE', 'EMAIL', 'APPLIED', 'STATUS', 'ACTIONS'].map(h => (
+              <span key={h} className="text-data-label text-text-muted uppercase tracking-widest">{h}</span>
             ))}
           </div>
 
-          {applicants.map(app => (
-            <div
-              key={app.id}
-              className="al-table-row"
-              style={{
-                display: 'grid', gridTemplateColumns: '1.5fr 2fr 1fr 1fr 1.2fr', minWidth: 520,
-                padding: '14px 20px', borderBottom: '1px solid var(--border-subtle)',
-                alignItems: 'center', cursor: 'pointer', transition: 'background 0.15s ease',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-elevated)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              onClick={() => setSelected(app)}
-            >
-              <span style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>
-                {app.profiles?.full_name}
-              </span>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>{app.profiles?.email}</span>
-              <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{formatDate(app.applied_at)}</span>
-              <span onClick={e => e.stopPropagation()}><StatusBadge status={app.status} /></span>
-              <div onClick={e => e.stopPropagation()}>
-                <select
-                  value={app.status}
-                  onChange={e => updateStatus(app.id, e.target.value)}
-                  style={{
-                    background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '5px',
-                    color: 'var(--text-primary)',
-                    padding: '5px 8px',
-                    fontSize: '12px',
-                    fontFamily: '"DM Sans"',
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
-                >
-                  {STATUSES.map(s => (
-                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-                  ))}
-                </select>
+          <div className="divide-y divide-border-default dark:divide-outline-variant">
+            {applicants.map(app => (
+              <div key={app.id}
+                className="grid grid-cols-1 md:grid-cols-[1.5fr_2fr_1fr_1fr_auto] items-center px-margin-page py-4 gap-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer group"
+                onClick={() => setSelected(app)}>
+                {/* Name */}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary-container dark:bg-surface-container-high flex items-center justify-center font-bold text-[11px] text-on-secondary-container flex-shrink-0">
+                    {app.profiles?.full_name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <span className="font-medium text-[14px] text-text-primary dark:text-inverse-on-surface">{app.profiles?.full_name}</span>
+                </div>
+                {/* Email */}
+                <span className="hidden md:block text-body-sm text-text-secondary dark:text-text-muted">{app.profiles?.email}</span>
+                {/* Applied */}
+                <span className="hidden md:block font-mono text-[12px] text-text-muted">{formatDate(app.applied_at)}</span>
+                {/* Status badge */}
+                <div className="hidden md:block" onClick={e => e.stopPropagation()}>
+                  <StatusBadge status={app.status} />
+                </div>
+                {/* Actions */}
+                <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                  <select
+                    value={app.status}
+                    onChange={e => updateStatus(app.id, e.target.value)}
+                    className="h-8 px-2 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded text-[12px] text-text-primary dark:text-inverse-on-surface focus:outline-none focus:border-primary cursor-pointer"
+                  >
+                    {STATUSES.map(s => (
+                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                  </select>
+                  <button onClick={() => setSelected(app)}
+                    className="flex items-center gap-1 px-3 py-1.5 border border-border-default dark:border-outline-variant text-text-primary dark:text-inverse-on-surface text-[12px] font-medium rounded-lg hover:border-primary hover:text-primary transition-colors">
+                    View
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
