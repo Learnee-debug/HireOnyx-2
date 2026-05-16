@@ -3,14 +3,39 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
+function NavLink({ to, children, isActive }) {
+  return (
+    <Link
+      to={to}
+      className={`relative flex items-center h-nav-height text-body-base font-medium transition-colors duration-100 ${
+        isActive
+          ? 'text-primary'
+          : 'text-text-secondary hover:text-text-primary'
+      }`}
+    >
+      {children}
+      {isActive && (
+        <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
+      )}
+    </Link>
+  );
+}
+
 export default function Navbar() {
   const { user, profile, logout } = useAuth();
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 4);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
 
   const isActive = (p) => location.pathname === p || location.pathname.startsWith(p + '/');
   const dashPath = profile?.role === 'recruiter' ? '/recruiter/dashboard' : '/dashboard';
@@ -19,85 +44,144 @@ export default function Navbar() {
     ? profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || '?';
 
+  /* Avatar colour — deterministic, looks good in both themes */
+  const avatarBg = 'bg-primary-container';
+  const avatarText = 'text-on-primary';
+
   return (
     <>
-      <nav className="bg-surface-container-lowest dark:bg-inverse-surface border-b border-border-default dark:border-outline-variant sticky top-0 z-50 h-nav-height">
-        <div className="flex justify-between items-center h-full px-margin-page max-w-[1440px] mx-auto">
-          {/* Logo */}
-          <div className="flex items-center gap-8">
-            <Link to="/" className="font-bold text-headline-md text-text-primary dark:text-inverse-on-surface no-underline">
-              HireOnyx
-            </Link>
-            {/* Desktop nav links */}
-            <div className="hidden md:flex items-center gap-6 h-nav-height">
-              <Link to="/jobs" className={`font-medium text-body-base pb-1 h-nav-height flex items-center border-b-2 transition-colors ${isActive('/jobs') ? 'text-primary dark:text-primary-fixed border-primary' : 'text-text-secondary dark:text-text-muted border-transparent hover:text-primary'}`}>
-                Jobs
-              </Link>
-              {user && (
-                <Link to={dashPath} className={`font-medium text-body-base pb-1 h-nav-height flex items-center border-b-2 transition-colors ${isActive(dashPath) ? 'text-primary dark:text-primary-fixed border-primary' : 'text-text-secondary dark:text-text-muted border-transparent hover:text-primary'}`}>
-                  {profile?.role === 'recruiter' ? 'Dashboard' : 'Applications'}
-                </Link>
-              )}
-              {profile?.role === 'recruiter' && (
-                <Link to="/post-job" className={`font-medium text-body-base pb-1 h-nav-height flex items-center border-b-2 transition-colors ${isActive('/post-job') ? 'text-primary border-primary' : 'text-text-secondary border-transparent hover:text-primary'}`}>
-                  Post Job
-                </Link>
-              )}
-            </div>
+      <nav className={`h-nav-height sticky top-0 z-50 w-full transition-all duration-200 ${
+        scrolled
+          ? 'bg-surface-container-lowest border-b border-border-default shadow-sm'
+          : 'bg-surface-container-lowest border-b border-border-default'
+      }`}>
+        <div className="flex items-center justify-between h-full px-margin-page max-w-[1440px] mx-auto gap-8">
+
+          {/* ── Logo ── */}
+          <Link to="/" className="flex-shrink-0 font-bold text-[17px] tracking-tight text-text-primary select-none">
+            HireOnyx
+          </Link>
+
+          {/* ── Desktop nav links ── */}
+          <div className="hidden md:flex items-center gap-6 h-nav-height flex-1">
+            <NavLink to="/jobs" isActive={isActive('/jobs')}>Jobs</NavLink>
+            {user && (
+              <NavLink to={dashPath} isActive={isActive(dashPath)}>
+                {profile?.role === 'recruiter' ? 'Dashboard' : 'Applications'}
+              </NavLink>
+            )}
+            {profile?.role === 'recruiter' && (
+              <NavLink to="/post-job" isActive={isActive('/post-job')}>Post Job</NavLink>
+            )}
           </div>
 
-          {/* Right side */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* ── Right actions ── */}
+          <div className="hidden md:flex items-center gap-3">
             {/* Theme toggle */}
-            <button onClick={toggle} className="material-symbols-outlined text-text-secondary hover:text-primary transition-colors cursor-pointer" title="Toggle theme">
-              {dark ? 'light_mode' : 'dark_mode'}
+            <button
+              onClick={toggle}
+              title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-container-high transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {dark ? 'light_mode' : 'dark_mode'}
+              </span>
             </button>
 
             {user ? (
               <>
-                <div className="w-8 h-8 rounded-full bg-secondary-container dark:bg-surface-container-high flex items-center justify-center text-[11px] font-bold text-on-secondary-container cursor-pointer" title={profile?.full_name || user.email}>
+                {/* Avatar */}
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${avatarBg} ${avatarText}`}
+                  title={profile?.full_name || user.email}
+                >
                   {initials}
                 </div>
-                <span className="text-body-sm text-text-secondary dark:text-text-muted">
+                {/* Name */}
+                <span className="text-body-sm text-text-secondary max-w-[120px] truncate">
                   {profile?.full_name?.split(' ')[0] || user.email}
                 </span>
-                <button onClick={async () => { await logout(); navigate('/'); }}
-                  className="px-4 py-1.5 text-button-text font-medium text-text-primary dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container transition-colors rounded-lg">
-                  Sign Out
+                {/* Sign out */}
+                <button
+                  onClick={async () => { await logout(); navigate('/'); }}
+                  className="px-3 py-1.5 text-button-text text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors"
+                >
+                  Sign out
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => navigate('/login')}
-                  className="px-4 py-1.5 text-button-text font-medium text-text-primary dark:text-inverse-on-surface hover:bg-surface-container-low dark:hover:bg-surface-container transition-colors rounded-lg">
+                <button
+                  onClick={() => navigate('/login')}
+                  className="px-3 py-1.5 text-button-text text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors"
+                >
                   Sign In
                 </button>
-                <button onClick={() => navigate('/signup')}
-                  className="px-4 py-1.5 bg-text-primary dark:bg-inverse-on-surface text-white dark:text-inverse-surface text-button-text font-medium rounded-lg hover:opacity-90 transition-opacity">
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="px-4 py-1.5 text-button-text font-semibold bg-text-primary text-surface-container-lowest rounded-lg hover:opacity-90 active:scale-[0.98] transition-all"
+                >
                   Post Job
                 </button>
               </>
             )}
           </div>
 
-          {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(o => !o)} className="md:hidden text-text-primary dark:text-inverse-on-surface p-1">
-            <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'menu'}</span>
-          </button>
+          {/* ── Mobile: theme + hamburger ── */}
+          <div className="flex md:hidden items-center gap-2">
+            <button
+              onClick={toggle}
+              className="w-8 h-8 flex items-center justify-center text-text-secondary"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {dark ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
+            <button
+              onClick={() => setMobileOpen(o => !o)}
+              className="w-8 h-8 flex items-center justify-center text-text-primary"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {mobileOpen ? 'close' : 'menu'}
+              </span>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* ── Mobile drawer ── */}
         {mobileOpen && (
-          <div className="md:hidden absolute top-nav-height left-0 right-0 bg-surface-container-lowest dark:bg-inverse-surface border-b border-border-default dark:border-outline-variant p-4 flex flex-col gap-3 z-50">
-            <Link to="/jobs" className="text-body-base font-medium text-text-primary dark:text-inverse-on-surface py-2">Jobs</Link>
-            {user && <Link to={dashPath} className="text-body-base font-medium text-text-primary dark:text-inverse-on-surface py-2">{profile?.role === 'recruiter' ? 'Dashboard' : 'Applications'}</Link>}
-            {profile?.role === 'recruiter' && <Link to="/post-job" className="text-body-base font-medium text-text-primary dark:text-inverse-on-surface py-2">Post Job</Link>}
-            <div className="flex items-center gap-3 pt-2 border-t border-border-default dark:border-outline-variant">
-              <button onClick={toggle} className="material-symbols-outlined text-text-secondary dark:text-text-muted">{dark ? 'light_mode' : 'dark_mode'}</button>
-              {user
-                ? <button onClick={async () => { await logout(); navigate('/'); }} className="text-body-sm text-error">Sign Out</button>
-                : <Link to="/login" className="text-body-sm font-medium text-primary">Sign In</Link>
-              }
+          <div className="md:hidden absolute top-nav-height left-0 right-0 bg-surface-container-lowest border-b border-border-default z-50 py-2 px-margin-page flex flex-col divide-y divide-border-default">
+            <div className="flex flex-col gap-0.5 py-2">
+              <Link to="/jobs" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-base font-medium text-text-primary hover:bg-surface-container-low">
+                <span className="material-symbols-outlined text-[18px]">work</span>Jobs
+              </Link>
+              {user && (
+                <Link to={dashPath} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-base font-medium text-text-primary hover:bg-surface-container-low">
+                  <span className="material-symbols-outlined text-[18px]">dashboard</span>
+                  {profile?.role === 'recruiter' ? 'Dashboard' : 'Applications'}
+                </Link>
+              )}
+              {profile?.role === 'recruiter' && (
+                <Link to="/post-job" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-base font-medium text-text-primary hover:bg-surface-container-low">
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>Post Job
+                </Link>
+              )}
+            </div>
+            <div className="py-3">
+              {user ? (
+                <div className="flex items-center justify-between px-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${avatarBg} ${avatarText}`}>{initials}</div>
+                    <span className="text-body-sm text-text-secondary">{profile?.full_name || user.email}</span>
+                  </div>
+                  <button onClick={async () => { await logout(); navigate('/'); }} className="text-body-sm text-error font-medium">Sign out</button>
+                </div>
+              ) : (
+                <div className="flex gap-2 px-3">
+                  <Link to="/login" className="flex-1 text-center py-2 text-button-text text-text-primary border border-border-default rounded-lg">Sign In</Link>
+                  <Link to="/signup" className="flex-1 text-center py-2 text-button-text font-semibold bg-text-primary text-surface-container-lowest rounded-lg">Get Started</Link>
+                </div>
+              )}
             </div>
           </div>
         )}

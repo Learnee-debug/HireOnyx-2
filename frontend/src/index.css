@@ -2,31 +2,151 @@
 @tailwind components;
 @tailwind utilities;
 
-* { box-sizing: border-box; }
+/* ── CSS Custom Properties ── all theme tokens live here ── */
+:root {
+  /* Surfaces */
+  --c-bg:       #F4F3EF;
+  --c-surface:  #FFFFFF;
+  --c-s0:       #FFFFFF;   /* surface-container-lowest */
+  --c-s1:       #f5f4f0;   /* surface-container-low   */
+  --c-s2:       #efeeea;   /* surface-container       */
+  --c-s3:       #e9e8e4;   /* surface-container-high  */
+  --c-s4:       #e3e2df;   /* surface-container-highest */
+  --c-elevated: #F9F9F7;
+  --c-dim:      #dbdad6;
+
+  /* Borders */
+  --c-border:        #E4E4E0;
+  --c-border-strong: #C9C9C4;
+  --c-outline:       #737686;
+  --c-outline-var:   #c3c5d7;
+
+  /* Text */
+  --c-text:        #0D0D0C;
+  --c-text-muted:  #6B6B68;
+  --c-text-subtle: #A3A3A0;
+
+  /* Brand */
+  --c-primary:           #003fb1;
+  --c-primary-container: #1a56db;
+  --c-on-primary:        #ffffff;
+  --c-accent-light:      #EEF2FF;
+  --c-error:             #ba1a1a;
+
+  /* Score — light mode */
+  --c-score-high-bg:     #F0FDF4;
+  --c-score-high-text:   #166534;
+  --c-score-high-border: #bbf7d0;
+  --c-score-mid-bg:      #EEF2FF;
+  --c-score-mid-text:    #1547C0;
+  --c-score-mid-border:  #c3d4ff;
+  --c-score-low-bg:      #FFFBEB;
+  --c-score-low-text:    #92400E;
+  --c-score-low-border:  #fed7aa;
+  --c-score-none-bg:     #F4F3EF;
+  --c-score-none-text:   #6B6B68;
+  --c-score-none-border: #E4E4E0;
+}
+
+html.dark {
+  /* Surfaces — deep onyx */
+  --c-bg:       #0d0f0d;
+  --c-surface:  #1f201e;
+  --c-s0:       #0d0f0d;
+  --c-s1:       #1b1c1a;
+  --c-s2:       #1f201e;
+  --c-s3:       #292a28;
+  --c-s4:       #343533;
+  --c-elevated: #1f201e;
+  --c-dim:      #121412;
+
+  /* Borders */
+  --c-border:        #2a2a28;
+  --c-border-strong: #434654;
+  --c-outline:       #8d90a0;
+  --c-outline-var:   #434654;
+
+  /* Text */
+  --c-text:        #e3e2df;
+  --c-text-muted:  #c3c5d7;
+  --c-text-subtle: #8d90a0;
+
+  /* Brand — lavender primary in dark */
+  --c-primary:           #b5c4ff;
+  --c-primary-container: #1a56db;
+  --c-on-primary:        #00297a;
+  --c-accent-light:      rgba(181,196,255,0.12);
+  --c-error:             #ffb4ab;
+
+  /* Score — dark mode (Stitch dark DESIGN.md) */
+  --c-score-high-bg:     rgba(34,197,94,0.10);
+  --c-score-high-text:   #22C55E;
+  --c-score-high-border: rgba(34,197,94,0.25);
+  --c-score-mid-bg:      rgba(59,130,246,0.10);
+  --c-score-mid-text:    #60A5FA;
+  --c-score-mid-border:  rgba(59,130,246,0.25);
+  --c-score-low-bg:      rgba(245,158,11,0.10);
+  --c-score-low-text:    #FBBF24;
+  --c-score-low-border:  rgba(245,158,11,0.25);
+  --c-score-none-bg:     rgba(255,255,255,0.04);
+  --c-score-none-text:   #8d90a0;
+  --c-score-none-border: #2a2a28;
+}
+
+/* ── Base ── */
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body {
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: #F4F3EF;
-  color: #0D0D0C;
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-html.dark body {
-  background-color: #1b1c1a;
-  color: #f2f1ed;
-}
-
+/* ── Material Symbols ── */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
   font-size: 20px;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #F4F3EF; }
-::-webkit-scrollbar-thumb { background: #E4E4E0; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #C9C9C4; }
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-border-strong); }
+
+/* ── Selection ── */
+::selection {
+  background: var(--c-primary-container);
+  color: var(--c-on-primary);
+}
+
+/* ── Score badge utility classes (use CSS vars so dark mode works) ── */
+.score-high  { background: var(--c-score-high-bg); color: var(--c-score-high-text); border-color: var(--c-score-high-border); }
+.score-mid   { background: var(--c-score-mid-bg);  color: var(--c-score-mid-text);  border-color: var(--c-score-mid-border); }
+.score-low   { background: var(--c-score-low-bg);  color: var(--c-score-low-text);  border-color: var(--c-score-low-border); }
+.score-none  { background: var(--c-score-none-bg); color: var(--c-score-none-text); border-color: var(--c-score-none-border); }
+
+/* ── Range slider ── */
+input[type=range] { accent-color: var(--c-primary-container); }
+
+/* ── Focus ring ── */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--c-primary-container);
+  outline-offset: 2px;
+}
+
+/* ── No outline on click ── */
+button:focus:not(:focus-visible) { outline: none; }

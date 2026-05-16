@@ -20,17 +20,11 @@ const TYPE_LABELS = {
 
 /* ── Score Badge ── */
 function ScoreBadge({ score }) {
-  const cfg = score >= 90
-    ? { bg: 'bg-score-high-bg', text: 'text-score-high-text', dot: 'bg-score-high-text', border: 'border-green-100' }
-    : score >= 75
-    ? { bg: 'bg-score-mid-bg', text: 'text-score-mid-text', dot: 'bg-score-mid-text', border: 'border-blue-100' }
-    : score >= 60
-    ? { bg: 'bg-score-low-bg', text: 'text-score-low-text', dot: 'bg-score-low-text', border: 'border-amber-100' }
-    : { bg: 'bg-score-none-bg', text: 'text-score-none-text', dot: 'bg-score-none-text', border: 'border-border-default' };
+  const cls = score >= 90 ? 'score-high' : score >= 75 ? 'score-mid' : score >= 60 ? 'score-low' : 'score-none';
   return (
-    <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full ${cfg.bg} border ${cfg.border}`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></div>
-      <span className={`font-mono text-data-label ${cfg.text}`}>{score}%</span>
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${cls}`}>
+      <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'currentColor' }} />
+      <span className="font-mono text-[11px] font-semibold">{score}%</span>
     </div>
   );
 }
@@ -38,7 +32,7 @@ function ScoreBadge({ score }) {
 /* ── Type Badge ── */
 function TypeBadge({ type }) {
   return (
-    <span className="px-2 py-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider border border-border-default dark:border-outline-variant text-text-secondary dark:text-text-muted rounded">
+    <span className="px-2 py-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider border border-border-default text-text-secondary rounded">
       {TYPE_LABELS[type] || type}
     </span>
   );
