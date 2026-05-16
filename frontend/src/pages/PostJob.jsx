@@ -71,7 +71,7 @@ export default function PostJob() {
   }
 
   return (
-    <div className="max-w-[720px] mx-auto px-margin-page py-12">
+    <div className="max-w-[720px] mx-auto px-4 md:px-margin-page py-8 md:py-12">
       {/* Page header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4 text-body-sm">

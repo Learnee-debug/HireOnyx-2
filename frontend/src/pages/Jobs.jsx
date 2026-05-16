@@ -101,10 +101,10 @@ const ITEMS_PER_PAGE = 10;
 /* ── Skeleton rows for loading state ── */
 function SkeletonJobRow() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] items-center px-6 gap-4 h-row-height border-b border-border-default last:border-0 animate-pulse">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center px-4 gap-3 min-h-[64px] py-3 border-b border-border-default last:border-0 animate-pulse md:grid md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-surface-container-high flex-shrink-0" />
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 flex-1">
           <div className="h-3.5 bg-surface-container-high rounded w-36" />
           <div className="h-2.5 bg-surface-container-high rounded w-24" />
         </div>
@@ -112,7 +112,7 @@ function SkeletonJobRow() {
       <div className="hidden md:block h-3 bg-surface-container-high rounded w-20" />
       <div className="hidden md:block h-5 bg-surface-container-high rounded-full w-16" />
       <div className="hidden md:block h-3 bg-surface-container-high rounded w-20" />
-      <div className="hidden md:flex items-center gap-3">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <div className="h-6 bg-surface-container-high rounded-full w-14" />
       </div>
     </div>
@@ -235,7 +235,7 @@ export default function Jobs() {
       </aside>
 
       {/* Main content */}
-      <section className="flex-1 bg-page-bg p-margin-page flex flex-col gap-6 min-w-0">
+      <section className="flex-1 bg-page-bg px-4 py-4 md:p-margin-page flex flex-col gap-6 min-w-0">
 
         {/* Header bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -247,7 +247,7 @@ export default function Jobs() {
           </div>
           <div className="flex items-center gap-3">
             {/* Search */}
-            <div className="relative w-full sm:w-[240px]">
+            <div className="relative w-full sm:w-[240px] md:w-[240px]">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">search</span>
               <input
                 value={search}
@@ -333,34 +333,35 @@ export default function Jobs() {
 
                   return (
                     <div key={job.id} onClick={() => navigate(`/jobs/${job.id}`)}
-                      className="grid grid-cols-1 md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] items-center px-6 gap-4 h-row-height hover:bg-surface-container-low transition-colors cursor-pointer group">
-                      {/* Title + Company */}
-                      <div className="flex items-center gap-3">
+                      className="flex items-center px-4 gap-3 min-h-[64px] py-3 hover:bg-surface-container-low transition-colors cursor-pointer group md:grid md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0">
+                      {/* Col 1: Avatar + Title + Company — always visible, flex-1 on mobile */}
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className={`w-8 h-8 flex items-center justify-center font-bold text-sm rounded-lg border border-border-default flex-shrink-0 ${avatarCls}`}>
                           {initial}
                         </div>
                         <div className="min-w-0">
                           <div className="font-medium text-[14px] text-text-primary group-hover:text-primary transition-colors truncate">{job.title}</div>
-                          <div className="text-body-sm text-text-secondary truncate">{job.company}</div>
+                          <div className="text-[12px] text-text-secondary truncate">{job.company}{job.location ? ` · ${job.location}` : ''}</div>
                         </div>
                       </div>
-                      {/* Location */}
+                      {/* Col 2: Location — desktop only */}
                       <div className="hidden md:flex items-center gap-1 text-body-sm text-text-secondary">
                         <span className="material-symbols-outlined text-[14px] text-text-muted">location_on</span>
                         <span className="truncate">{job.location}</span>
                       </div>
-                      {/* Type */}
+                      {/* Col 3: Type — desktop only */}
                       <div className="hidden md:block">
                         <TypeBadge type={job.type} />
                       </div>
-                      {/* Salary */}
+                      {/* Col 4: Salary — desktop only */}
                       <div className="hidden md:block font-mono text-[13px] text-text-primary">
                         {salary || <span className="text-text-muted">—</span>}
                       </div>
-                      {/* Score + arrow */}
-                      <div className="flex items-center gap-3">
+                      {/* Col 5: Score + arrow — always visible, flex-shrink-0 on mobile */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <ScoreBadge score={score} />
                         <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors hidden md:block text-[18px]">chevron_right</span>
+                        <span className="material-symbols-outlined text-text-muted text-[16px] md:hidden">chevron_right</span>
                       </div>
                     </div>
                   );
@@ -409,7 +410,7 @@ export default function Jobs() {
       {mobileFiltersOpen && (
         <>
           <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setMobileFiltersOpen(false)} />
-          <div className="fixed inset-y-0 left-0 w-[280px] bg-surface-card z-50 md:hidden p-margin-page overflow-y-auto shadow-xl">
+          <div className="fixed inset-y-0 left-0 w-[280px] bg-surface-card z-50 md:hidden px-5 py-5 overflow-y-auto shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <span className="font-semibold text-text-primary">Filters</span>
               <button onClick={() => setMobileFiltersOpen(false)} className="text-text-muted hover:text-text-primary transition-colors">

@@ -171,7 +171,7 @@ export default function ApplicantsList() {
 
   return (
     <RecruiterLayout>
-      <div className="flex-1 min-w-0 px-margin-page py-10 max-w-[1280px] mx-auto w-full">
+      <div className="flex-1 min-w-0 px-4 md:px-margin-page py-8 md:py-10 max-w-[1280px] mx-auto w-full">
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-6 text-body-sm">
@@ -240,25 +240,28 @@ export default function ApplicantsList() {
                 const colorCls = AVATAR_COLORS[initial.charCodeAt(0) % AVATAR_COLORS.length];
                 return (
                   <div key={app.id}
-                    className="grid grid-cols-1 md:grid-cols-[1.5fr_2fr_1fr_1fr_auto] items-center px-6 gap-4 h-row-height hover:bg-surface-container-low transition-colors cursor-pointer group"
+                    className="flex items-center px-4 gap-3 min-h-[64px] py-3 hover:bg-surface-container-low transition-colors cursor-pointer group md:grid md:grid-cols-[1.5fr_2fr_1fr_1fr_auto] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0"
                     onClick={() => setSelected(app)}>
-                    {/* Name */}
-                    <div className="flex items-center gap-3">
+                    {/* Name — flex-1 on mobile */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${colorCls}`}>
                         {initial}
                       </div>
-                      <span className="font-medium text-[14px] text-text-primary group-hover:text-primary transition-colors">{name}</span>
+                      <div className="min-w-0">
+                        <span className="font-medium text-[14px] text-text-primary group-hover:text-primary transition-colors truncate block">{name}</span>
+                        <span className="text-[12px] text-text-muted md:hidden truncate block">{app.profiles?.email}</span>
+                      </div>
                     </div>
-                    {/* Email */}
+                    {/* Email — desktop only */}
                     <span className="hidden md:block text-body-sm text-text-secondary truncate">{app.profiles?.email}</span>
-                    {/* Applied date */}
+                    {/* Applied date — desktop only */}
                     <span className="hidden md:block font-mono text-[12px] text-text-muted">{formatDate(app.applied_at)}</span>
-                    {/* Status */}
+                    {/* Status — desktop only */}
                     <div className="hidden md:block" onClick={e => e.stopPropagation()}>
                       <StatusBadge status={app.status} />
                     </div>
-                    {/* Actions */}
-                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    {/* Actions — always visible */}
+                    <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
                       <select
                         value={app.status}
                         onChange={e => updateStatus(app.id, e.target.value)}

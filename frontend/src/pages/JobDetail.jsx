@@ -53,7 +53,7 @@ function SectionCard({ title, children }) {
 
 function SkeletonDetail() {
   return (
-    <div className="max-w-3xl mx-auto px-margin-page py-10 animate-pulse">
+    <div className="max-w-3xl mx-auto px-4 md:px-margin-page py-10 animate-pulse">
       <div className="h-4 bg-surface-container-high rounded w-40 mb-8" />
       <div className="flex items-center gap-4 mb-6">
         <div className="w-11 h-11 rounded-lg bg-surface-container-high flex-shrink-0" />
@@ -123,7 +123,7 @@ export default function JobDetail() {
   if (loading) return <SkeletonDetail />;
 
   if (notFound) return (
-    <div className="max-w-3xl mx-auto px-margin-page py-20 text-center">
+    <div className="max-w-3xl mx-auto px-4 md:px-margin-page py-20 text-center">
       <span className="material-symbols-outlined text-[64px] text-border-strong block mb-4">search_off</span>
       <h2 className="font-bold text-[22px] text-text-primary mb-2">Job not found</h2>
       <p className="text-text-secondary mb-8">This role may have been removed or the link is incorrect.</p>
@@ -173,7 +173,7 @@ export default function JobDetail() {
 
   return (
     <>
-      <div className="max-w-3xl mx-auto px-margin-page py-10 pb-28 md:pb-10">
+      <div className="max-w-3xl mx-auto px-4 md:px-margin-page py-8 md:py-10 pb-28 md:pb-10">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 mb-8 text-body-sm">
           <Link to="/jobs" className="text-text-secondary hover:text-primary transition-colors">Jobs</Link>
@@ -215,8 +215,8 @@ export default function JobDetail() {
         </div>
 
         {/* Action bar card */}
-        <div className="bg-surface-card border border-border-default rounded-xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex items-center gap-4 flex-1 flex-wrap">
+        <div className="bg-surface-card border border-border-default rounded-xl p-4 md:p-5 mb-8 flex flex-col gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <ScoreBadge score={match} large />
             {aiLoading && (
               <div className="flex items-center gap-2 text-body-sm text-text-secondary">
@@ -225,12 +225,12 @@ export default function JobDetail() {
               </div>
             )}
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-none sm:w-36">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
               <ApplySection />
             </div>
             <button
-              className="h-10 px-3 border border-border-default rounded-lg text-text-secondary hover:text-primary hover:border-primary transition-colors"
+              className="h-10 px-3 border border-border-default rounded-lg text-text-secondary hover:text-primary hover:border-primary transition-colors flex-shrink-0"
               title="Save for later">
               <span className="material-symbols-outlined text-[18px]">bookmark</span>
             </button>
@@ -302,7 +302,7 @@ export default function JobDetail() {
 
           {/* Job Details grid */}
           <SectionCard title="Job Details">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {[
                 { label: 'Type', value: TYPE_LABELS[job.type] || job.type },
                 { label: 'Location', value: job.location },

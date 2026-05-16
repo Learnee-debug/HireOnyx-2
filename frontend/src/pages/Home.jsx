@@ -71,7 +71,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
 
       {/* ── HERO ── */}
-      <section className="max-w-[1440px] mx-auto w-full px-margin-page pt-16 pb-16 md:pt-20 md:pb-20">
+      <section className="max-w-[1440px] mx-auto w-full px-4 md:px-margin-page pt-10 pb-10 md:pt-20 md:pb-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 border-b border-border-default pb-14">
 
           {/* Left — copy */}
@@ -80,7 +80,7 @@ export default function Home() {
               <span className="inline-block w-4 h-[1.5px] bg-primary" />
               AI-Powered Hiring
             </p>
-            <h1 className="font-bold text-[52px] md:text-[68px] leading-[0.95] tracking-tighter text-text-primary mb-6">
+            <h1 className="font-bold text-[36px] sm:text-[52px] md:text-[68px] leading-[0.95] tracking-tighter text-text-primary mb-6">
               Find your match.
             </h1>
             <p className="text-[16px] text-text-secondary leading-relaxed max-w-lg mb-8">
@@ -104,7 +104,7 @@ export default function Home() {
           </div>
 
           {/* Right — terminal widget */}
-          <div className="w-full md:w-96 flex-shrink-0 bg-surface-container border border-border-default rounded-xl overflow-hidden shadow-sm">
+          <div className="w-full md:w-96 flex-shrink-0 bg-surface-container border border-border-default rounded-xl overflow-hidden shadow-sm max-w-full">
             {/* Terminal title bar */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default bg-surface-container-high">
               <div className="flex items-center gap-2 font-mono text-[11px] text-primary font-semibold">
@@ -145,7 +145,7 @@ export default function Home() {
       </section>
 
       {/* ── STATS STRIP ── */}
-      <section className="max-w-[1440px] mx-auto w-full px-margin-page mb-16">
+      <section className="max-w-[1440px] mx-auto w-full px-4 md:px-margin-page mb-10 md:mb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 border border-border-default divide-x divide-y md:divide-y-0 divide-border-default bg-surface-container-low rounded-xl overflow-hidden">
           {[
             { label: 'Roles', value: '2,482', sub: 'active postings' },
@@ -163,7 +163,7 @@ export default function Home() {
       </section>
 
       {/* ── BENEFITS ROW ── */}
-      <section className="max-w-[1440px] mx-auto w-full px-margin-page mb-16">
+      <section className="max-w-[1440px] mx-auto w-full px-4 md:px-margin-page mb-10 md:mb-16">
         <div className="grid grid-cols-1 md:grid-cols-3 border border-border-default bg-surface-container-lowest rounded-xl divide-y md:divide-y-0 md:divide-x divide-border-default overflow-hidden">
           {[
             { icon: 'bolt', title: 'Instant Screening', desc: 'Automated technical vetting that goes beyond keywords to understand core architectural competence.' },
@@ -180,16 +180,17 @@ export default function Home() {
       </section>
 
       {/* ── LATEST JOBS ── */}
-      <section className="max-w-[1440px] mx-auto w-full px-margin-page mb-20 flex-1">
-        <div className="flex items-end justify-between mb-5 pb-4 border-b border-border-default">
+      <section className="max-w-[1440px] mx-auto w-full px-4 md:px-margin-page mb-12 md:mb-20 flex-1">
+        <div className="flex items-start justify-between mb-5 pb-4 border-b border-border-default gap-4">
           <div>
-            <h2 className="font-bold text-[22px] text-text-primary tracking-tight">Latest Job Clusters</h2>
+            <h2 className="font-bold text-[20px] md:text-[22px] text-text-primary tracking-tight">Latest Job Clusters</h2>
             <p className="text-body-sm text-text-secondary mt-1">
               {jobs.length > 0 ? `${jobs.length} new openings · updated live` : 'Live opportunities updated daily.'}
             </p>
           </div>
-          <Link to="/jobs" className="flex items-center gap-1 font-mono text-[12px] font-semibold text-primary hover:underline">
-            VIEW_ALL_VACANCIES
+          <Link to="/jobs" className="flex items-center gap-1 font-mono text-[11px] md:text-[12px] font-semibold text-primary hover:underline flex-shrink-0">
+            <span className="hidden sm:inline">VIEW_ALL_VACANCIES</span>
+            <span className="sm:hidden">View all</span>
             <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
           </Link>
         </div>

@@ -68,7 +68,7 @@ export default function Reports() {
   if (loading) {
     return (
       <RecruiterLayout>
-        <div className="px-margin-page pt-8 pb-16 max-w-[1280px] mx-auto w-full">
+        <div className="px-4 md:px-margin-page pt-6 md:pt-8 pb-16 max-w-[1280px] mx-auto w-full">
           <div className="h-8 w-32 bg-surface-container-high rounded animate-pulse mb-2" />
           <div className="h-4 w-56 bg-surface-container-high rounded animate-pulse mb-8" />
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -221,7 +221,8 @@ export default function Reports() {
               </Link>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[500px] text-left border-collapse">
               <thead>
                 <tr className="h-8 border-b border-border-default">
                   <th className="px-6 font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.06em]">Job</th>
@@ -274,6 +275,7 @@ export default function Reports() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

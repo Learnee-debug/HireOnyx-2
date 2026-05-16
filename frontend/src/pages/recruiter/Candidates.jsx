@@ -192,7 +192,7 @@ export default function Candidates() {
 
   return (
     <RecruiterLayout>
-      <div className="px-margin-page pt-8 pb-16 max-w-[1280px] mx-auto w-full">
+      <div className="px-4 md:px-margin-page pt-6 md:pt-8 pb-16 max-w-[1280px] mx-auto w-full">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -236,7 +236,8 @@ export default function Candidates() {
 
         {/* Table */}
         <div className="bg-surface-card border border-border-default rounded-xl overflow-hidden">
-          <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-left border-collapse">
             <thead>
               <tr className="h-8 bg-surface-container-low border-b border-border-default">
                 {['Candidate', 'Applied for', 'Status', 'Match Score', 'Applied', 'Action'].map(h => (
@@ -301,6 +302,7 @@ export default function Candidates() {
             </tbody>
           </table>
 
+          </div>
           {!loading && filtered.length > 0 && (
             <div className="px-6 py-3 border-t border-border-default bg-surface-container-low">
               <span className="font-mono text-[11px] text-text-muted">

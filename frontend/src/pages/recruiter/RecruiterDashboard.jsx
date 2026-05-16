@@ -25,10 +25,10 @@ function ScoreBadge({ score }) {
 
 function SkeletonPipelineRow() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_auto] items-center px-6 gap-4 h-row-height border-b border-border-default last:border-0 animate-pulse">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center px-4 gap-3 min-h-[64px] py-3 border-b border-border-default last:border-0 animate-pulse md:grid md:grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_auto] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="w-8 h-8 rounded-full bg-surface-container-high flex-shrink-0" />
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 flex-1">
           <div className="h-3.5 bg-surface-container-high rounded w-32" />
           <div className="h-2.5 bg-surface-container-high rounded w-20" />
         </div>
@@ -37,7 +37,7 @@ function SkeletonPipelineRow() {
       <div className="hidden md:block h-5 bg-surface-container-high rounded-full w-20" />
       <div className="hidden md:block h-5 bg-surface-container-high rounded-full w-14" />
       <div className="hidden md:block h-3 bg-surface-container-high rounded w-16" />
-      <div className="hidden md:flex gap-2">
+      <div className="flex gap-2 flex-shrink-0">
         <div className="w-8 h-8 bg-surface-container-high rounded-lg" />
         <div className="w-8 h-8 bg-surface-container-high rounded-lg" />
       </div>
@@ -99,7 +99,7 @@ export default function RecruiterDashboard() {
 
   return (
     <RecruiterLayout>
-      <div className="px-margin-page pt-8 pb-10 max-w-[1280px] mx-auto w-full">
+      <div className="px-4 md:px-margin-page pt-6 md:pt-8 pb-10 max-w-[1280px] mx-auto w-full">
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
@@ -183,11 +183,11 @@ export default function RecruiterDashboard() {
 
                 return (
                   <div key={job.id}
-                    className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_auto] items-center px-6 gap-4 h-row-height hover:bg-surface-container-low transition-colors group cursor-pointer"
+                    className="flex items-center px-4 gap-3 min-h-[64px] py-3 hover:bg-surface-container-low transition-colors group cursor-pointer md:grid md:grid-cols-[minmax(0,2fr)_1fr_1fr_1fr_1fr_auto] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0"
                     onClick={() => navigate(`/recruiter/jobs/${job.id}/applicants`)}>
 
-                    {/* Job title */}
-                    <div className="flex items-center gap-3 min-w-0">
+                    {/* Job title — flex-1 on mobile */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${colorCls}`}>
                         {initial}
                       </div>
@@ -216,8 +216,8 @@ export default function RecruiterDashboard() {
                     {/* Date */}
                     <div className="hidden md:block font-mono text-[12px] text-text-muted">{daysAgo(job.created_at)}</div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                    {/* Actions — always visible, flex-shrink-0 on mobile */}
+                    <div className="flex items-center gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
                       <button onClick={() => navigate(`/recruiter/jobs/${job.id}/applicants`)}
                         className="h-8 px-3 flex items-center gap-1 border border-border-default text-text-primary text-[12px] font-medium rounded-lg hover:border-primary hover:text-primary transition-colors">
                         <span className="material-symbols-outlined text-[14px]">visibility</span>

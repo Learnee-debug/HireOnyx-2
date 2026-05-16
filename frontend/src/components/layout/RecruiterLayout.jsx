@@ -7,6 +7,14 @@ const NAV = [
   { icon: 'bar_chart',  label: 'Reports',      to: '/recruiter/reports' },
 ];
 
+const MOBILE_NAV = [
+  { icon: 'dashboard',  label: 'Overview',    to: '/recruiter/dashboard' },
+  { icon: 'work',       label: 'Jobs',         to: '/recruiter/jobs' },
+  { icon: 'people',     label: 'Candidates',   to: '/recruiter/candidates' },
+  { icon: 'bar_chart',  label: 'Reports',      to: '/recruiter/reports' },
+  { icon: 'add_circle', label: 'Post',         to: '/post-job' },
+];
+
 function SidebarLink({ icon, label, to, active }) {
   return (
     <Link to={to} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
@@ -48,7 +56,21 @@ export default function RecruiterLayout({ children }) {
       </aside>
 
       {/* Page body */}
-      <div className="flex-1 min-w-0">{children}</div>
+      <div className="flex-1 min-w-0 pb-16 md:pb-0">{children}</div>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-border-default flex z-50">
+        {MOBILE_NAV.map(n => {
+          const active = pathname === n.to || pathname.startsWith(n.to + '/');
+          return (
+            <Link key={n.to} to={n.to}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${active ? 'text-primary' : 'text-text-secondary hover:text-primary'}`}>
+              <span className="material-symbols-outlined text-[22px]">{n.icon}</span>
+              <span className="text-[9px] font-medium">{n.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

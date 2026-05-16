@@ -26,8 +26,8 @@ function StagePill({ status }) {
 
 function SkeletonRow() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] items-center px-6 gap-4 h-row-height border-b border-border-default last:border-0 animate-pulse">
-      <div className="space-y-1.5">
+    <div className="flex items-center px-4 gap-3 min-h-[64px] py-3 border-b border-border-default last:border-0 animate-pulse md:grid md:grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0">
+      <div className="flex-1 space-y-1.5 min-w-0">
         <div className="h-3.5 bg-surface-container-high rounded w-40" />
         <div className="h-2.5 bg-surface-container-high rounded w-24 md:hidden" />
       </div>
@@ -37,7 +37,7 @@ function SkeletonRow() {
       </div>
       <div className="hidden md:block h-5 bg-surface-container-high rounded-full w-20" />
       <div className="hidden md:block h-3 bg-surface-container-high rounded w-16 font-mono" />
-      <div className="hidden md:block h-3 bg-surface-container-high rounded w-12" />
+      <div className="h-5 bg-surface-container-high rounded-full w-20 flex-shrink-0" />
     </div>
   );
 }
@@ -70,7 +70,7 @@ export default function SeekerDashboard() {
 
   return (
     <div className="min-h-screen bg-page-bg">
-      <div className="max-w-[1280px] mx-auto px-margin-page pt-10 pb-24 md:pb-20">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-margin-page pt-8 md:pt-10 pb-24 md:pb-20">
 
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
@@ -165,28 +165,28 @@ export default function SeekerDashboard() {
                 const colorCls = AVATAR_COLORS[initial.charCodeAt(0) % AVATAR_COLORS.length];
                 return (
                   <div key={a.id} onClick={() => navigate(`/jobs/${a.job_id}`)}
-                    className="grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] items-center px-6 gap-4 h-row-height hover:bg-surface-container-low transition-colors cursor-pointer group">
-                    {/* Role */}
-                    <div className="min-w-0">
+                    className="flex items-center px-4 gap-3 min-h-[64px] py-3 hover:bg-surface-container-low transition-colors cursor-pointer group md:grid md:grid-cols-[minmax(0,2fr)_1.5fr_1fr_1fr_auto] md:px-6 md:gap-4 md:min-h-0 md:h-row-height md:py-0">
+                    {/* Role — flex-1 on mobile */}
+                    <div className="flex-1 min-w-0">
                       <div className="font-medium text-[14px] text-text-primary group-hover:text-primary transition-colors truncate">
                         {a.jobs?.title}
                       </div>
-                      <div className="text-body-sm text-text-secondary md:hidden truncate">
-                        {a.jobs?.company} · {a.jobs?.location}
+                      <div className="text-[12px] text-text-secondary truncate">
+                        {a.jobs?.company}{a.jobs?.location ? ` · ${a.jobs?.location}` : ''}
                       </div>
                     </div>
-                    {/* Company */}
+                    {/* Company — desktop only */}
                     <div className="hidden md:flex items-center gap-3">
                       <div className={`w-7 h-7 flex items-center justify-center font-bold text-[11px] rounded border border-border-default flex-shrink-0 ${colorCls}`}>
                         {initial}
                       </div>
                       <span className="text-body-sm text-text-secondary truncate">{a.jobs?.company}</span>
                     </div>
-                    {/* Stage */}
-                    <div><StagePill status={a.status} /></div>
-                    {/* Applied */}
+                    {/* Stage — always visible, flex-shrink-0 on mobile */}
+                    <div className="flex-shrink-0"><StagePill status={a.status} /></div>
+                    {/* Applied — desktop only */}
                     <div className="hidden md:block font-mono text-[12px] text-text-muted">{daysAgo(a.applied_at)}</div>
-                    {/* Action */}
+                    {/* Action — desktop only */}
                     <div className="hidden md:block">
                       <span className="text-body-sm font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         View <span className="material-symbols-outlined text-[14px]">arrow_forward</span>

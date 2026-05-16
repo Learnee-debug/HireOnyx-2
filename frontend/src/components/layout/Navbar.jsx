@@ -55,7 +55,7 @@ export default function Navbar() {
           ? 'bg-surface-container-lowest border-b border-border-default shadow-sm'
           : 'bg-surface-container-lowest border-b border-border-default'
       }`}>
-        <div className="flex items-center justify-between h-full px-margin-page max-w-[1440px] mx-auto gap-8">
+        <div className="flex items-center justify-between h-full px-4 md:px-margin-page max-w-[1440px] mx-auto gap-4 md:gap-8">
 
           {/* ── Logo ── */}
           <Link to="/" className="flex-shrink-0 font-bold text-[17px] tracking-tight text-text-primary select-none">
@@ -150,7 +150,7 @@ export default function Navbar() {
 
         {/* ── Mobile drawer ── */}
         {mobileOpen && (
-          <div className="md:hidden absolute top-nav-height left-0 right-0 bg-surface-container-lowest border-b border-border-default z-50 py-2 px-margin-page flex flex-col divide-y divide-border-default">
+          <div className="md:hidden absolute top-nav-height left-0 right-0 bg-surface-container-lowest border-b border-border-default z-50 py-2 px-4 flex flex-col divide-y divide-border-default">
             <div className="flex flex-col gap-0.5 py-2">
               <Link to="/jobs" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-base font-medium text-text-primary hover:bg-surface-container-low">
                 <span className="material-symbols-outlined text-[18px]">work</span>Jobs
