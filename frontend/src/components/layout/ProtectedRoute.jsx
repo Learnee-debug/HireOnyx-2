@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 
 function Spinner() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-page-bg dark:bg-[#1b1c1a]">
+    <div className="flex items-center justify-center min-h-screen bg-page-bg">
       <div className="w-8 h-8 border-2 border-border-default border-t-primary rounded-full animate-spin" />
     </div>
   );

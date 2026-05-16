@@ -12,10 +12,10 @@ export default class ErrorBoundary extends Component {
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center px-margin-page py-10 text-center">
           <span className="material-symbols-outlined text-[48px] text-border-strong mb-4">warning</span>
-          <h2 className="font-bold text-[22px] text-text-primary dark:text-inverse-on-surface mb-2">
+          <h2 className="font-bold text-[22px] text-text-primary mb-2">
             Something went wrong
           </h2>
-          <p className="text-text-secondary dark:text-text-muted text-body-base mb-8 max-w-md">
+          <p className="text-text-secondary text-body-base mb-8 max-w-md">
             An unexpected error occurred. Refresh the page to continue.
           </p>
           <button

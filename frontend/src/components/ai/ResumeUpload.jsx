@@ -60,13 +60,13 @@ export default function ResumeUpload({ onParsed, compact = false }) {
   // ── Done state ─────────────────────────────────────────────
   if (state === 'done' && profile) {
     return (
-      <div className="bg-score-high-bg border border-green-100 rounded-lg p-4">
+      <div className="bg-score-high-bg border border-score-high-text/20 rounded-lg p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined text-score-high-text text-[18px]">check_circle</span>
               <span className="text-score-high-text font-semibold text-body-base">Resume parsed</span>
-              <span className="px-2 py-0.5 bg-score-high-bg border border-green-100 text-score-high-text font-mono text-[10px] font-semibold rounded-full">
+              <span className="px-2 py-0.5 bg-score-high-bg border border-score-high-text/20 text-score-high-text font-mono text-[10px] font-semibold rounded-full">
                 {profile.skills.length} skills found
               </span>
             </div>
@@ -84,8 +84,10 @@ export default function ResumeUpload({ onParsed, compact = false }) {
             )}
           </div>
           <button onClick={handleRemove}
-            className="text-text-muted hover:text-text-primary transition-colors text-[20px] leading-none p-1 flex-shrink-0"
-            title="Remove resume">&times;</button>
+            className="text-text-muted hover:text-text-primary transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low flex-shrink-0"
+            title="Remove resume">
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
         </div>
       </div>
     );
@@ -98,10 +100,10 @@ export default function ResumeUpload({ onParsed, compact = false }) {
       onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
       onDragLeave={() => setDrag(false)}
       onDrop={handleDrop}
-      className={`rounded-lg border-2 border-dashed transition-all cursor-pointer text-center select-none
-        ${drag ? 'border-primary bg-accent-light/40' : state === 'error' ? 'border-error/40 bg-error/5' : 'border-border-default hover:border-primary/50 bg-surface-card dark:bg-surface-container'}
-        ${compact ? 'p-4' : 'p-6'}`}
-      style={{ cursor: state === 'uploading' ? 'wait' : 'pointer' }}
+      className={`rounded-lg border-2 border-dashed transition-all select-none
+        ${drag ? 'border-primary bg-accent-light/40' : state === 'error' ? 'border-error/40 bg-error/5' : 'border-border-default hover:border-primary/50 bg-surface-card'}
+        ${compact ? 'p-4' : 'p-6'}
+        ${state !== 'uploading' ? 'cursor-pointer' : 'cursor-wait'}`}
     >
       <input
         ref={inputRef}
@@ -113,22 +115,22 @@ export default function ResumeUpload({ onParsed, compact = false }) {
 
       {state === 'uploading' ? (
         <div className="flex items-center justify-center gap-3">
-          <div className="w-5 h-5 border-2 border-border-default border-t-primary rounded-full animate-spin"></div>
-          <span className="text-body-sm text-text-secondary dark:text-text-muted">Parsing resume…</span>
+          <div className="w-5 h-5 border-2 border-border-default border-t-primary rounded-full animate-spin" />
+          <span className="text-body-sm text-text-secondary">Parsing resume…</span>
         </div>
       ) : (
-        <>
+        <div className="text-center">
           <span className="material-symbols-outlined text-[32px] text-text-muted block mb-2">description</span>
-          <div className="text-body-base font-medium text-text-primary dark:text-inverse-on-surface mb-1">
+          <div className="text-body-base font-medium text-text-primary mb-1">
             {drag ? 'Drop your resume' : 'Upload your resume'}
           </div>
-          <div className="text-body-sm text-text-secondary dark:text-text-muted">
-            PDF only · max 5 MB · drag & drop or click
+          <div className="text-body-sm text-text-secondary">
+            PDF only · max 5 MB · drag &amp; drop or click
           </div>
           {state === 'error' && (
             <div className="text-error text-body-sm mt-2">{error}</div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

@@ -9,7 +9,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const textareaCls = "w-full px-3 py-2.5 bg-surface-container-low dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-base text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-vertical leading-relaxed";
+  const textareaCls = "w-full px-3 py-2.5 bg-surface-container-low border border-border-default rounded-lg text-body-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 transition-all resize-none leading-relaxed";
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -41,23 +41,29 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4 py-6"
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-[2px] flex items-center justify-center px-4 py-6"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-xl p-8">
+      <div className="w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-surface-card border border-border-default rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between p-6 pb-0">
           <div>
-            <h2 className="font-semibold text-[20px] text-text-primary dark:text-inverse-on-surface">Apply for {job.title}</h2>
-            <p className="text-body-sm text-text-secondary dark:text-text-muted mt-1">{job.company}</p>
+            <h2 className="font-semibold text-[20px] text-text-primary">Apply for {job.title}</h2>
+            <p className="text-body-sm text-text-secondary mt-1">{job.company}</p>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text-primary transition-colors text-[22px] leading-none ml-4 flex-shrink-0">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-text-muted hover:text-text-primary transition-colors ml-4 flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-lg hover:bg-surface-container-low">
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <div className="h-px bg-border-default mx-6 mt-5" />
+
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           <div>
-            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">
-              Cover Letter <span className="normal-case text-[11px] text-text-muted font-normal tracking-normal">(optional)</span>
+            <label className="block font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em] mb-1.5">
+              Cover Letter <span className="normal-case text-[11px] font-normal tracking-normal text-text-muted">(optional)</span>
             </label>
             <textarea
               rows={4}
@@ -69,7 +75,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">
+            <label className="block font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em] mb-1.5">
               Your Resume <span className="text-primary">*</span>
             </label>
             <textarea
@@ -81,15 +87,20 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
             />
           </div>
 
-          {error && <p className="text-body-sm text-error">{error}</p>}
+          {error && (
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-error-container/20 border border-error/20 rounded-lg text-body-sm text-error">
+              <span className="material-symbols-outlined text-[16px] flex-shrink-0">error</span>
+              {error}
+            </div>
+          )}
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-border-default">
             <button type="button" onClick={onClose}
-              className="px-5 py-2.5 border border-border-default dark:border-outline-variant text-text-primary dark:text-inverse-on-surface text-body-sm font-medium rounded-lg hover:bg-surface-container-low transition-colors">
+              className="h-10 px-5 border border-border-default text-text-primary font-medium text-[14px] rounded-lg hover:bg-surface-container-low transition-colors">
               Cancel
             </button>
             <button type="submit" disabled={loading}
-              className="px-6 py-2.5 bg-primary-container text-white text-body-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60">
+              className="h-10 px-5 bg-primary-container text-white font-semibold text-[14px] rounded-lg hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
               {loading ? 'Submitting…' : 'Submit Application'}
             </button>
           </div>

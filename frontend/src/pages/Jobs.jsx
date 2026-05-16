@@ -40,7 +40,11 @@ function TypeBadge({ type }) {
 
 /* ── Filter section label ── */
 function FilterLabel({ children }) {
-  return <div className="text-data-label text-text-muted uppercase tracking-widest mb-2">{children}</div>;
+  return (
+    <div className="font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em] mb-2">
+      {children}
+    </div>
+  );
 }
 
 /* ── Filter radio ── */
@@ -52,7 +56,7 @@ function FilterRadio({ options, value, onChange, name }) {
           <input type="radio" name={name} value={opt.value} checked={value === opt.value}
             onChange={() => onChange(opt.value)}
             className="w-3.5 h-3.5 accent-primary" />
-          <span className={`text-body-sm transition-colors ${value === opt.value ? 'text-primary font-medium' : 'text-text-secondary dark:text-text-muted group-hover:text-text-primary dark:group-hover:text-inverse-on-surface'}`}>
+          <span className={`text-body-sm transition-colors ${value === opt.value ? 'text-primary font-medium' : 'text-text-secondary group-hover:text-text-primary'}`}>
             {opt.label}
           </span>
         </label>
@@ -67,7 +71,7 @@ function FilterChip({ label, active, onClick }) {
     <button onClick={onClick}
       className={`px-3 py-1 rounded-full text-[12px] font-medium border transition-colors ${active
         ? 'bg-accent-light text-primary border-primary/30'
-        : 'bg-transparent text-text-secondary dark:text-text-muted border-border-default dark:border-outline-variant hover:border-primary hover:text-primary'}`}>
+        : 'bg-transparent text-text-secondary border-border-default hover:border-primary hover:text-primary'}`}>
       {label}
     </button>
   );
@@ -93,6 +97,27 @@ const EXP_OPTIONS = ['Junior', 'Mid-level', 'Senior'];
 const TYPE_OPTIONS = ['Full-time', 'Contract', 'Part-time', 'Internship'];
 
 const ITEMS_PER_PAGE = 10;
+
+/* ── Skeleton rows for loading state ── */
+function SkeletonJobRow() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] items-center px-6 gap-4 h-row-height border-b border-border-default last:border-0 animate-pulse">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-surface-container-high flex-shrink-0" />
+        <div className="space-y-1.5">
+          <div className="h-3.5 bg-surface-container-high rounded w-36" />
+          <div className="h-2.5 bg-surface-container-high rounded w-24" />
+        </div>
+      </div>
+      <div className="hidden md:block h-3 bg-surface-container-high rounded w-20" />
+      <div className="hidden md:block h-5 bg-surface-container-high rounded-full w-16" />
+      <div className="hidden md:block h-3 bg-surface-container-high rounded w-20" />
+      <div className="hidden md:flex items-center gap-3">
+        <div className="h-6 bg-surface-container-high rounded-full w-14" />
+      </div>
+    </div>
+  );
+}
 
 export default function Jobs() {
   const { profile: userProfile } = useAuth();
@@ -165,10 +190,10 @@ export default function Jobs() {
     setExpFilter([]); setTypeFilter([]); setPage(1);
   };
 
-  const Sidebar = () => (
+  const SidebarContent = () => (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <span className="font-semibold text-body-base text-text-primary dark:text-inverse-on-surface">Filters</span>
+        <span className="font-semibold text-body-base text-text-primary">Filters</span>
         <button onClick={resetFilters} className="text-[12px] text-primary hover:underline">Reset all</button>
       </div>
 
@@ -203,38 +228,32 @@ export default function Jobs() {
   );
 
   return (
-    <div className="flex max-w-[1440px] mx-auto min-h-[calc(100vh-52px)]">
-      {/* Sidebar — desktop */}
-      <aside className="hidden md:block w-[240px] flex-shrink-0 sticky top-nav-height h-[calc(100vh-52px)] overflow-y-auto border-r border-border-default dark:border-outline-variant bg-surface-container-lowest dark:bg-inverse-surface p-margin-page">
-        <Sidebar />
+    <div className="flex max-w-[1440px] mx-auto min-h-[calc(100vh-60px)]">
+      {/* Sidebar — desktop only */}
+      <aside className="hidden md:block w-[240px] flex-shrink-0 sticky top-nav-height h-[calc(100vh-60px)] overflow-y-auto border-r border-border-default bg-surface-container-lowest p-margin-page">
+        <SidebarContent />
       </aside>
 
-      {/* Main */}
-      <section className="flex-1 bg-page-bg dark:bg-[#1b1c1a] p-margin-page flex flex-col gap-6 min-w-0">
+      {/* Main content */}
+      <section className="flex-1 bg-page-bg p-margin-page flex flex-col gap-6 min-w-0">
 
         {/* Header bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-bold text-[22px] text-text-primary dark:text-inverse-on-surface">Available Jobs</h1>
-            <p className="text-body-sm text-text-secondary dark:text-text-muted mt-0.5">
-              {loading ? 'Loading...' : `${filtered.length} role${filtered.length !== 1 ? 's' : ''} found`}
+            <h1 className="font-bold text-[22px] text-text-primary">Available Jobs</h1>
+            <p className="text-body-sm text-text-secondary mt-0.5">
+              {loading ? 'Loading…' : `${filtered.length} role${filtered.length !== 1 ? 's' : ''} found`}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Mobile filter button */}
-            <button onClick={() => setMobileFiltersOpen(true)}
-              className="md:hidden flex items-center gap-2 px-3 py-2 border border-border-default rounded-lg text-body-sm text-text-primary dark:text-inverse-on-surface">
-              <span className="material-symbols-outlined text-[16px]">tune</span>
-              Filters
-            </button>
             {/* Search */}
             <div className="relative w-full sm:w-[240px]">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">search</span>
               <input
                 value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search roles, skills..."
-                className="w-full h-input-height pl-9 pr-3 bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-sm text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors"
+                placeholder="Search roles, skills…"
+                className="w-full h-input-height pl-9 pr-3 bg-surface-card border border-border-default rounded-lg text-body-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 transition-all"
               />
             </div>
           </div>
@@ -259,126 +278,147 @@ export default function Jobs() {
                 </button>
               )
             ) : (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-score-high-bg border border-green-100">
+              <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-score-high-bg border border-score-high-text/20">
+                <span className="relative flex h-2 w-2 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-score-high-text opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-score-high-text" />
+                </span>
                 <span className="material-symbols-outlined text-score-high-text text-[18px]">description</span>
                 <span className="text-score-high-text text-body-sm font-medium">
-                  Resume active — {resumeProfile.skills.length} skills detected
+                  Resume active — {resumeProfile.skills?.length ?? 0} skills detected
                 </span>
                 {aiLoading && <span className="text-text-secondary text-body-sm">Analyzing…</span>}
                 {aiError && <span className="text-error text-body-sm">{aiError}</span>}
-                <button onClick={() => navigate('/jobs')} className="ml-auto text-body-sm font-medium text-primary hover:underline">
-                  Browse matched jobs →
-                </button>
                 <button onClick={() => {
                   setResumeProfile(null); setMatchMap(new Map());
                   localStorage.removeItem('hireonyx_resume_profile');
-                }} className="text-text-muted hover:text-text-primary text-[18px] leading-none">&times;</button>
+                }} className="ml-auto text-text-muted hover:text-text-primary text-[20px] leading-none transition-colors">&times;</button>
               </div>
             )}
           </div>
         )}
 
-        {/* Table */}
+        {/* Table / Loading / Empty */}
         {loading ? (
-          <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg overflow-hidden">
+          <div className="bg-surface-card border border-border-default rounded-xl overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-margin-page py-4 border-b border-border-default dark:border-outline-variant last:border-0 animate-pulse">
-                <div className="w-9 h-9 rounded-lg bg-surface-container-high dark:bg-surface-container flex-shrink-0"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-surface-container-high dark:bg-surface-container rounded w-48"></div>
-                  <div className="h-3 bg-surface-container-high dark:bg-surface-container rounded w-32"></div>
-                </div>
-                <div className="h-6 w-16 bg-surface-container-high dark:bg-surface-container rounded-full"></div>
-              </div>
+              <SkeletonJobRow key={i} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg flex flex-col items-center justify-center py-20 gap-3">
+          <div className="bg-surface-card border border-border-default rounded-xl flex flex-col items-center justify-center py-20 gap-3">
             <span className="material-symbols-outlined text-[40px] text-border-strong">search_off</span>
-            <p className="text-body-base text-text-secondary dark:text-text-muted">No roles match your search.</p>
+            <p className="text-body-base text-text-secondary">No roles match your search.</p>
             <button onClick={resetFilters} className="text-body-sm text-primary hover:underline">Clear all filters</button>
           </div>
         ) : (
           <>
-            {/* Column headers */}
-            <div className="hidden md:grid grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] px-margin-page py-2 gap-4">
-              {['JOB TITLE & COMPANY', 'LOCATION', 'TYPE', 'SALARY', 'MATCH SCORE'].map(h => (
-                <span key={h} className="text-data-label text-text-muted uppercase tracking-widest">{h}</span>
-              ))}
-            </div>
+            {/* Table container */}
+            <div className="bg-surface-card border border-border-default rounded-xl overflow-hidden">
+              {/* Column headers */}
+              <div className="hidden md:grid grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] h-8 bg-surface-container-low border-b border-border-default px-6 gap-4 items-center">
+                {['JOB TITLE & COMPANY', 'LOCATION', 'TYPE', 'SALARY', 'MATCH SCORE'].map(h => (
+                  <span key={h} className="font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.06em]">{h}</span>
+                ))}
+              </div>
 
-            <div className="bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg divide-y divide-border-default dark:divide-outline-variant overflow-hidden">
-              {paginated.map(job => {
-                const initial = job.company?.[0]?.toUpperCase() || '?';
-                const score = matchMap.get(job.id)?.matchScore ?? stableMatch(job.id);
-                const bgColors = ['bg-accent-light text-primary', 'bg-surface-container-high text-on-secondary-container'];
-                const avatarBg = bgColors[initial.charCodeAt(0) % bgColors.length];
-                const salary = formatSalary(job.salary_min, job.salary_max);
+              {/* Rows */}
+              <div className="divide-y divide-border-default">
+                {paginated.map(job => {
+                  const initial = job.company?.[0]?.toUpperCase() || '?';
+                  const score = matchMap.get(job.id)?.matchScore ?? stableMatch(job.id);
+                  const salary = formatSalary(job.salary_min, job.salary_max);
+                  const avatarColors = ['bg-accent-light text-primary', 'bg-surface-container-high text-text-secondary'];
+                  const avatarCls = avatarColors[initial.charCodeAt(0) % avatarColors.length];
 
-                return (
-                  <div key={job.id} onClick={() => navigate(`/jobs/${job.id}`)}
-                    className="grid grid-cols-1 md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] items-center px-margin-page py-4 gap-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer group">
-                    {/* Title + Company */}
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 flex items-center justify-center font-bold text-sm rounded-lg border border-border-default flex-shrink-0 ${avatarBg}`}>
-                        {initial}
+                  return (
+                    <div key={job.id} onClick={() => navigate(`/jobs/${job.id}`)}
+                      className="grid grid-cols-1 md:grid-cols-[minmax(0,2.5fr)_1fr_1fr_1fr_1fr] items-center px-6 gap-4 h-row-height hover:bg-surface-container-low transition-colors cursor-pointer group">
+                      {/* Title + Company */}
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 flex items-center justify-center font-bold text-sm rounded-lg border border-border-default flex-shrink-0 ${avatarCls}`}>
+                          {initial}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-[14px] text-text-primary group-hover:text-primary transition-colors truncate">{job.title}</div>
+                          <div className="text-body-sm text-text-secondary truncate">{job.company}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-medium text-[14px] text-text-primary dark:text-inverse-on-surface group-hover:text-primary transition-colors">{job.title}</div>
-                        <div className="text-body-sm text-text-secondary dark:text-text-muted">{job.company}</div>
+                      {/* Location */}
+                      <div className="hidden md:flex items-center gap-1 text-body-sm text-text-secondary">
+                        <span className="material-symbols-outlined text-[14px] text-text-muted">location_on</span>
+                        <span className="truncate">{job.location}</span>
+                      </div>
+                      {/* Type */}
+                      <div className="hidden md:block">
+                        <TypeBadge type={job.type} />
+                      </div>
+                      {/* Salary */}
+                      <div className="hidden md:block font-mono text-[13px] text-text-primary">
+                        {salary || <span className="text-text-muted">—</span>}
+                      </div>
+                      {/* Score + arrow */}
+                      <div className="flex items-center gap-3">
+                        <ScoreBadge score={score} />
+                        <span className="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors hidden md:block text-[18px]">chevron_right</span>
                       </div>
                     </div>
-                    {/* Location */}
-                    <div className="hidden md:flex items-center gap-1 text-body-sm text-text-secondary dark:text-text-muted">
-                      <span className="material-symbols-outlined text-[14px] text-text-muted">location_on</span>
-                      {job.location}
-                    </div>
-                    {/* Type */}
-                    <div className="hidden md:block">
-                      <TypeBadge type={job.type} />
-                    </div>
-                    {/* Salary */}
-                    <div className="hidden md:block font-mono text-[13px] text-text-primary dark:text-inverse-on-surface">
-                      {salary || <span className="text-text-muted">—</span>}
-                    </div>
-                    {/* Score */}
-                    <div className="flex items-center gap-4">
-                      <ScoreBadge score={score} />
-                      <span className="material-symbols-outlined text-text-muted group-hover:text-text-primary transition-colors hidden md:block">chevron_right</span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-2">
+              <div className="flex items-center justify-center gap-1.5 pt-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container-low transition-colors disabled:opacity-30">
+                  <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+                </button>
                 {Array.from({ length: totalPages }).map((_, i) => (
                   <button key={i} onClick={() => setPage(i + 1)}
                     className={`w-8 h-8 rounded-full text-[13px] font-medium transition-colors ${page === i + 1
-                      ? 'bg-text-primary dark:bg-inverse-on-surface text-white dark:text-inverse-surface'
-                      : 'text-text-secondary dark:text-text-muted hover:bg-surface-container-high'}`}>
+                      ? 'bg-text-primary text-white'
+                      : 'text-text-secondary hover:bg-surface-container-low'}`}>
                     {i + 1}
                   </button>
                 ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-surface-container-low transition-colors disabled:opacity-30">
+                  <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                </button>
               </div>
             )}
           </>
         )}
       </section>
 
-      {/* Mobile filter overlay */}
+      {/* Mobile filter FAB */}
+      <button
+        onClick={() => setMobileFiltersOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-30 flex items-center gap-2 px-4 py-3 bg-text-primary text-white rounded-full shadow-lg text-body-sm font-semibold">
+        <span className="material-symbols-outlined text-[18px]">tune</span>
+        Filters
+      </button>
+
+      {/* Mobile filter drawer */}
       {mobileFiltersOpen && (
         <>
           <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setMobileFiltersOpen(false)} />
-          <div className="fixed inset-y-0 left-0 w-[280px] bg-surface-card dark:bg-surface-container z-50 md:hidden p-margin-page overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-[280px] bg-surface-card z-50 md:hidden p-margin-page overflow-y-auto shadow-xl">
             <div className="flex items-center justify-between mb-6">
-              <span className="font-semibold text-text-primary dark:text-inverse-on-surface">Filters</span>
-              <button onClick={() => setMobileFiltersOpen(false)} className="material-symbols-outlined text-text-muted">close</button>
+              <span className="font-semibold text-text-primary">Filters</span>
+              <button onClick={() => setMobileFiltersOpen(false)} className="text-text-muted hover:text-text-primary transition-colors">
+                <span className="material-symbols-outlined">close</span>
+              </button>
             </div>
-            <Sidebar />
-            <button onClick={() => setMobileFiltersOpen(false)} className="mt-6 w-full h-10 bg-primary-container text-white rounded-lg text-button-text font-medium">
+            <SidebarContent />
+            <button onClick={() => setMobileFiltersOpen(false)}
+              className="mt-6 w-full h-10 px-5 bg-primary-container text-white font-semibold text-[14px] rounded-lg hover:opacity-90 active:scale-[0.98] transition-all">
               Apply Filters
             </button>
           </div>

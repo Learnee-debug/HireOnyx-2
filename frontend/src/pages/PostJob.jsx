@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 function Field({ label, required, hint, children }) {
   return (
     <div>
-      <label className="block text-data-label text-text-muted uppercase tracking-widest mb-1.5">
+      <label className="block font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em] mb-1.5">
         {label}{required && <span className="text-primary ml-0.5">*</span>}
       </label>
       {children}
@@ -16,8 +16,18 @@ function Field({ label, required, hint, children }) {
   );
 }
 
-const inputCls = "w-full h-input-height px-3 bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-base text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors";
-const textareaCls = "w-full px-3 py-2 bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg text-body-base text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted focus:outline-none focus:border-primary transition-colors resize-vertical leading-relaxed";
+const inputCls = "w-full h-input-height px-3 bg-surface-container-low border border-border-default rounded-lg text-body-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 transition-all";
+const textareaCls = "w-full px-3 py-2.5 bg-surface-container-low border border-border-default rounded-lg text-body-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/10 transition-all resize-none leading-relaxed";
+
+function SectionDivider({ label }) {
+  return (
+    <div className="flex items-center gap-4 py-2">
+      <div className="flex-1 h-px bg-border-default" />
+      <span className="font-mono text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em]">{label}</span>
+      <div className="flex-1 h-px bg-border-default" />
+    </div>
+  );
+}
 
 export default function PostJob() {
   const { user } = useAuth();
@@ -64,8 +74,13 @@ export default function PostJob() {
     <div className="max-w-[720px] mx-auto px-margin-page py-12">
       {/* Page header */}
       <div className="mb-8">
-        <h1 className="font-bold text-[28px] text-text-primary dark:text-inverse-on-surface mb-2">Post a new role</h1>
-        <p className="text-body-base text-text-secondary dark:text-text-muted">
+        <div className="flex items-center gap-2 mb-4 text-body-sm">
+          <Link to="/recruiter/dashboard" className="text-text-secondary hover:text-primary transition-colors">Dashboard</Link>
+          <span className="material-symbols-outlined text-[14px] text-text-muted">chevron_right</span>
+          <span className="text-text-primary font-medium">Post a Role</span>
+        </div>
+        <h1 className="font-bold text-[28px] text-text-primary mb-2">Post a new role</h1>
+        <p className="text-body-base text-text-secondary">
           Roles are reviewed within 24 hours and matched to candidates by skill score.
         </p>
       </div>
@@ -141,8 +156,7 @@ export default function PostJob() {
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="h-px bg-border-default dark:bg-outline-variant"></div>
+        <SectionDivider label="Job Content" />
 
         {/* Description */}
         <Field label="Job description" required>
@@ -168,15 +182,17 @@ export default function PostJob() {
           />
         </Field>
 
+        <SectionDivider label="Required Skills" />
+
         {/* Skills tag input */}
-        <Field label="Required skills" hint="Press Enter or comma to add a skill tag">
-          <div className="min-h-input-height px-3 py-2 bg-surface-card dark:bg-surface-container border border-border-default dark:border-outline-variant rounded-lg flex flex-wrap gap-2 focus-within:border-primary transition-colors">
+        <Field label="Skills" hint="Press Enter or comma to add a skill tag">
+          <div className={`min-h-input-height px-3 py-2 bg-surface-container-low border border-border-default rounded-lg flex flex-wrap gap-2 focus-within:border-primary-container focus-within:ring-2 focus-within:ring-primary-container/10 transition-all`}>
             {skills.map(s => (
               <span key={s} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-accent-light text-primary border border-primary/20 rounded-full font-mono text-[12px]">
                 {s}
                 <button type="button" onClick={() => setSkills(prev => prev.filter(x => x !== s))}
-                  className="text-primary/60 hover:text-primary leading-none">
-                  &times;
+                  className="text-primary/60 hover:text-primary leading-none w-4 h-4 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[14px]">close</span>
                 </button>
               </span>
             ))}
@@ -186,19 +202,19 @@ export default function PostJob() {
               onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addSkill(); } }}
               onBlur={addSkill}
               placeholder={skills.length === 0 ? 'TypeScript, React, Node.js…' : ''}
-              className="bg-transparent border-none outline-none text-body-sm text-text-primary dark:text-inverse-on-surface placeholder:text-text-muted flex-1 min-w-[120px]"
+              className="bg-transparent border-none outline-none text-body-sm text-text-primary placeholder:text-text-muted flex-1 min-w-[120px]"
             />
           </div>
         </Field>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-border-default dark:border-outline-variant">
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-border-default">
           <Link to="/recruiter/dashboard"
-            className="text-body-sm text-text-secondary dark:text-text-muted hover:text-primary transition-colors">
+            className="h-10 px-5 border border-border-default text-text-primary font-medium text-[14px] rounded-lg hover:bg-surface-container-low transition-colors text-center flex items-center justify-center">
             Cancel
           </Link>
           <button type="submit" disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary-container text-white text-button-text font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60">
+            className="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-6 bg-primary-container text-white font-semibold text-[14px] rounded-lg hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
             <span className="material-symbols-outlined text-[16px]">publish</span>
             {loading ? 'Publishing…' : 'Publish Role'}
           </button>
