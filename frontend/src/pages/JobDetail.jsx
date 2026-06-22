@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { stableMatch, formatDate, formatSalary } from '../lib/utils';
 import ApplyModal from '../components/applications/ApplyModal';
@@ -92,17 +92,19 @@ export default function JobDetail() {
       setLoading(true);
       setNotFound(false);
 
-      const { data: jobData, error } = await supabase
-        .from('jobs').select('*').eq('id', id).single();
+      let jobData;
+      try {
+        ({ job: jobData } = await api.jobs.getOne(id));
+      } catch {
+        if (!cancelled) { setNotFound(true); setLoading(false); }
+        return;
+      }
 
       if (cancelled) return;
-      if (error || !jobData) { setNotFound(true); setLoading(false); return; }
       setJob(jobData);
 
       if (user && profile?.role === 'seeker') {
-        const { data: appData } = await supabase
-          .from('applications').select('*')
-          .eq('job_id', id).eq('seeker_id', user.id).maybeSingle();
+        const { application: appData } = await api.applications.check(id).catch(() => ({ application: null }));
         if (!cancelled) setApplication(appData);
 
         const savedProfile = getSavedProfile();

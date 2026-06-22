@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 
 export default function ApplyModal({ job, onClose, onSuccess }) {
-  const { user } = useAuth();
   const [coverLetter, setCoverLetter] = useState('');
   const [resumeText, setResumeText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,26 +15,18 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     setError('');
     setLoading(true);
 
-    const { data, error: err } = await supabase.from('applications').insert({
-      job_id: job.id,
-      seeker_id: user.id,
-      cover_letter: coverLetter,
-      resume_text: resumeText,
-      status: 'applied',
-    }).select().single();
-
-    setLoading(false);
-
-    if (err) {
-      if (err.code === '23505') {
-        setError("You've already applied to this job.");
-      } else {
-        setError('Failed to submit. Please try again.');
-      }
-      return;
+    try {
+      const { application } = await api.applications.create({
+        job_id: job.id,
+        cover_letter: coverLetter,
+        resume_text: resumeText,
+      });
+      onSuccess(application);
+    } catch (err) {
+      setError(err.message || 'Failed to submit. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    onSuccess(data);
   }
 
   return (

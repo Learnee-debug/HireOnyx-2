@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { api, getToken, setToken, clearToken } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -8,71 +8,40 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  async function fetchProfile(userId) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    setProfile(data);
-    return data;
-  }
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    if (!getToken()) { setLoading(false); return; }
+    api.auth.me()
+      .then(({ profile: prof }) => { setUser(prof); setProfile(prof); })
+      .catch(() => clearToken())
+      .finally(() => setLoading(false));
   }, []);
 
   async function login(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error };
-    if (data.user) {
-      const prof = await fetchProfile(data.user.id);
+    try {
+      const { token, profile: prof } = await api.auth.login({ email, password });
+      setToken(token);
+      setUser(prof);
+      setProfile(prof);
       return { profile: prof };
+    } catch (err) {
+      return { error: { message: err.message } };
     }
-    return {};
   }
 
   async function signup(email, password, fullName, role) {
     try {
-      // Use backend admin API — bypasses email confirmation & rate limits entirely
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName, role }),
-      });
-      const json = await res.json();
-      if (!json.success) return { error: { message: json.error } };
+      const { token, profile: prof } = await api.auth.signup({ email, password, fullName, role });
+      setToken(token);
+      setUser(prof);
+      setProfile(prof);
+      return { user: prof };
     } catch (err) {
-      return { error: { message: 'Network error. Make sure the server is running.' } };
+      return { error: { message: err.message } };
     }
-
-    // Sign in to create session
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error };
-    if (data.user) await fetchProfile(data.user.id);
-    return { user: data.user };
   }
 
-  async function logout() {
-    await supabase.auth.signOut();
+  function logout() {
+    clearToken();
     setUser(null);
     setProfile(null);
   }

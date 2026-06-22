@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { daysAgo, stableMatch, formatSalary } from '../../lib/utils';
 import RecruiterLayout from '../../components/layout/RecruiterLayout';
 
@@ -43,27 +42,21 @@ function FunnelBar({ label, count, total, color }) {
 }
 
 export default function Reports() {
-  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data: jobs } = await supabase
-        .from('jobs').select('*').eq('recruiter_id', user.id);
-
+      const { jobs } = await api.jobs.mine();
       if (!jobs?.length) { setData({ jobs: [], apps: [], jobMap: {} }); setLoading(false); return; }
 
-      const { data: apps } = await supabase
-        .from('applications').select('*')
-        .in('job_id', jobs.map(j => j.id));
-
+      const { applications: apps } = await api.applications.recruiterAll();
       const jobMap = Object.fromEntries(jobs.map(j => [j.id, j]));
       setData({ jobs, apps: apps || [], jobMap });
       setLoading(false);
     }
-    load();
-  }, [user.id]);
+    load().catch(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (

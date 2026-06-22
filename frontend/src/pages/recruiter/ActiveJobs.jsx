@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { daysAgo, formatType, formatSalary, stableMatch } from '../../lib/utils';
 import RecruiterLayout from '../../components/layout/RecruiterLayout';
 import toast from 'react-hot-toast';
@@ -37,7 +36,6 @@ function SkeletonRow() {
 }
 
 export default function ActiveJobs() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [appCounts, setAppCounts] = useState({});
@@ -46,32 +44,21 @@ export default function ActiveJobs() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    async function load() {
-      const { data: jobsData } = await supabase
-        .from('jobs').select('*')
-        .eq('recruiter_id', user.id)
-        .order('created_at', { ascending: false });
-
-      const jobs = jobsData || [];
-      setJobs(jobs);
-
-      if (jobs.length) {
-        const { data: apps } = await supabase
-          .from('applications').select('job_id')
-          .in('job_id', jobs.map(j => j.id));
+    api.jobs.mine()
+      .then(({ jobs: jobsData }) => {
+        setJobs(jobsData || []);
         const counts = {};
-        apps?.forEach(a => { counts[a.job_id] = (counts[a.job_id] || 0) + 1; });
+        (jobsData || []).forEach(j => { counts[j.id] = j.application_count || 0; });
         setAppCounts(counts);
-      }
-      setLoading(false);
-    }
-    load();
-  }, [user.id]);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   async function toggleActive(job, e) {
     e.stopPropagation();
     const next = !job.is_active;
-    await supabase.from('jobs').update({ is_active: next }).eq('id', job.id);
+    await api.jobs.update(job.id, { is_active: next });
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j, is_active: next } : j));
     toast.success(next ? 'Job activated' : 'Job paused');
   }
