@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { api } from '../../lib/api';
 import { formatDate } from '../../lib/utils';
 import toast from 'react-hot-toast';
 import RecruiterLayout from '../../components/layout/RecruiterLayout';
@@ -32,11 +32,15 @@ function Drawer({ applicant, onClose, onStatusChange }) {
 
   async function updateStatus(status) {
     setUpdating(true);
-    const { error } = await supabase.from('applications').update({ status }).eq('id', applicant.id);
-    setUpdating(false);
-    if (error) { toast.error('Failed to update status.'); return; }
-    onStatusChange(applicant.id, status);
-    toast.success(`Status updated to ${STATUS_LABELS[status]}`);
+    try {
+      await api.applications.updateStatus(applicant.id, status);
+      onStatusChange(applicant.id, status);
+      toast.success(`Status updated to ${STATUS_LABELS[status]}`);
+    } catch {
+      toast.error('Failed to update status.');
+    } finally {
+      setUpdating(false);
+    }
   }
 
   const name = applicant.profiles?.full_name || 'Applicant';
@@ -143,18 +147,15 @@ export default function ApplicantsList() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [{ data: jobData }, { data: apps }] = await Promise.all([
-        supabase.from('jobs').select('*').eq('id', id).single(),
-        supabase.from('applications')
-          .select('*, profiles(full_name, email)')
-          .eq('job_id', id)
-          .order('applied_at', { ascending: false }),
+      const [{ job: jobData }, { applicants: apps }] = await Promise.all([
+        api.jobs.getOne(id),
+        api.jobs.applicants(id),
       ]);
       setJob(jobData);
       setApplicants(apps || []);
       setLoading(false);
     }
-    load();
+    load().catch(() => setLoading(false));
   }, [id]);
 
   function handleStatusChange(appId, status) {
@@ -163,10 +164,13 @@ export default function ApplicantsList() {
   }
 
   async function updateStatus(appId, status) {
-    const { error } = await supabase.from('applications').update({ status }).eq('id', appId);
-    if (error) { toast.error('Failed to update.'); return; }
-    handleStatusChange(appId, status);
-    toast.success(`Status updated to ${STATUS_LABELS[status]}`);
+    try {
+      await api.applications.updateStatus(appId, status);
+      handleStatusChange(appId, status);
+      toast.success(`Status updated to ${STATUS_LABELS[status]}`);
+    } catch {
+      toast.error('Failed to update.');
+    }
   }
 
   return (

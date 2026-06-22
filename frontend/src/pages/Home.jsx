@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { formatSalary } from '../lib/utils';
 import Footer from '../components/layout/Footer';
 
@@ -62,9 +62,7 @@ export default function Home() {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    supabase.from('jobs').select('*').eq('is_active', true)
-      .order('created_at', { ascending: false }).limit(5)
-      .then(({ data }) => setJobs(data || []));
+    api.jobs.list().then(({ jobs }) => setJobs((jobs || []).slice(0, 5))).catch(() => {});
   }, []);
 
   return (

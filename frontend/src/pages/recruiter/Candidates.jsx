@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { daysAgo, stableMatch, formatDate } from '../../lib/utils';
 import RecruiterLayout from '../../components/layout/RecruiterLayout';
 import toast from 'react-hot-toast';
@@ -36,11 +35,15 @@ function Drawer({ app, onClose, onStatusChange }) {
 
   async function updateStatus(status) {
     setUpdating(true);
-    const { error } = await supabase.from('applications').update({ status }).eq('id', app.id);
-    setUpdating(false);
-    if (error) { toast.error('Failed to update status.'); return; }
-    onStatusChange(app.id, status);
-    toast.success(`Status → ${STATUS_CFG[status]?.label || status}`);
+    try {
+      await api.applications.updateStatus(app.id, status);
+      onStatusChange(app.id, status);
+      toast.success(`Status → ${STATUS_CFG[status]?.label || status}`);
+    } catch {
+      toast.error('Failed to update status.');
+    } finally {
+      setUpdating(false);
+    }
   }
 
   const initials = app.profiles?.full_name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?';
@@ -144,7 +147,6 @@ function SkeletonRow() {
 }
 
 export default function Candidates() {
-  const { user } = useAuth();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -152,25 +154,11 @@ export default function Candidates() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    async function load() {
-      // Get all recruiter's jobs first
-      const { data: jobs } = await supabase.from('jobs').select('id, title').eq('recruiter_id', user.id);
-      if (!jobs?.length) { setLoading(false); return; }
-
-      const jobMap = Object.fromEntries(jobs.map(j => [j.id, j.title]));
-
-      // Get all applications for those jobs
-      const { data: applications } = await supabase
-        .from('applications')
-        .select('*, profiles(full_name, email)')
-        .in('job_id', jobs.map(j => j.id))
-        .order('applied_at', { ascending: false });
-
-      setApps((applications || []).map(a => ({ ...a, job_title: jobMap[a.job_id] || 'Unknown role' })));
-      setLoading(false);
-    }
-    load();
-  }, [user.id]);
+    api.applications.recruiterAll()
+      .then(({ applications }) => setApps(applications || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   function handleStatusChange(appId, status) {
     setApps(prev => prev.map(a => a.id === appId ? { ...a, status } : a));

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { daysAgo, stableMatch } from '../../lib/utils';
 import RecruiterLayout from '../../components/layout/RecruiterLayout';
 import toast from 'react-hot-toast';
@@ -53,7 +52,6 @@ const AVATAR_COLORS = [
 ];
 
 export default function RecruiterDashboard() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [appCounts, setAppCounts] = useState({});
@@ -61,27 +59,23 @@ export default function RecruiterDashboard() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    async function load() {
-      const { data: jobsData } = await supabase
-        .from('jobs').select('*').eq('recruiter_id', user.id).order('created_at', { ascending: false });
-      setJobs(jobsData || []);
-      if (jobsData?.length) {
-        const { data: apps } = await supabase.from('applications').select('job_id').in('job_id', jobsData.map(j => j.id));
+    api.jobs.mine()
+      .then(({ jobs: jobsData }) => {
+        setJobs(jobsData || []);
         const counts = {};
-        apps?.forEach(a => { counts[a.job_id] = (counts[a.job_id] || 0) + 1; });
+        (jobsData || []).forEach(j => { counts[j.id] = j.application_count || 0; });
         setAppCounts(counts);
-      }
-      setLoading(false);
-    }
-    load();
-  }, [user.id]);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const activeCount = jobs.filter(j => j.is_active).length;
   const totalApps = Object.values(appCounts).reduce((s, n) => s + n, 0);
   const filledCount = jobs.filter(j => !j.is_active).length;
 
   async function toggleActive(job) {
-    await supabase.from('jobs').update({ is_active: !job.is_active }).eq('id', job.id);
+    await api.jobs.update(job.id, { is_active: !job.is_active });
     setJobs(prev => prev.map(j => j.id === job.id ? { ...j, is_active: !j.is_active } : j));
     toast.success(job.is_active ? 'Job paused' : 'Job activated');
   }

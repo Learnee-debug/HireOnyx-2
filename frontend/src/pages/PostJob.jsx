@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 import toast from 'react-hot-toast';
 
 function Field({ label, required, hint, children }) {
@@ -30,7 +29,6 @@ function SectionDivider({ label }) {
 }
 
 export default function PostJob() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [fields, setFields] = useState({
     title: '', company: '', location: '', type: 'full-time',
@@ -51,23 +49,25 @@ export default function PostJob() {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.from('jobs').insert({
-      title: fields.title,
-      company: fields.company,
-      location: fields.location,
-      type: fields.type,
-      description: fields.description,
-      requirements: fields.requirements,
-      skills_required: skills,
-      salary_min: fields.salary_min ? parseInt(fields.salary_min) : null,
-      salary_max: fields.salary_max ? parseInt(fields.salary_max) : null,
-      recruiter_id: user.id,
-      is_active: true,
-    });
-    setLoading(false);
-    if (error) { toast.error('Failed to post job.'); return; }
-    toast.success('Role published!');
-    navigate('/recruiter/dashboard');
+    try {
+      await api.jobs.create({
+        title: fields.title,
+        company: fields.company,
+        location: fields.location,
+        type: fields.type,
+        description: fields.description,
+        requirements: fields.requirements,
+        skills_required: skills,
+        salary_min: fields.salary_min ? parseInt(fields.salary_min) : null,
+        salary_max: fields.salary_max ? parseInt(fields.salary_max) : null,
+      });
+      toast.success('Role published!');
+      navigate('/recruiter/dashboard');
+    } catch {
+      toast.error('Failed to post job.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

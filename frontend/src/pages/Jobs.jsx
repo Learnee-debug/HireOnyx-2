@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { daysAgo, formatSalary, stableMatch } from '../lib/utils';
 import {
@@ -155,14 +155,14 @@ export default function Jobs() {
   }, []);
 
   useEffect(() => {
-    supabase.from('jobs').select('*').eq('is_active', true)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        const jobList = data || [];
+    api.jobs.list()
+      .then(({ jobs }) => {
+        const jobList = jobs || [];
         setJobs(jobList);
         setLoading(false);
         if (resumeProfile) runMatching(resumeProfile, jobList);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []); // eslint-disable-line
 
   const toggleArr = (arr, setArr, val) =>

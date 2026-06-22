@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../context/AuthContext';
+import { api } from '../../lib/api';
 import { daysAgo } from '../../lib/utils';
 import { getSavedProfile } from '../../lib/aiMatchingApi';
 import ResumeUpload from '../../components/ai/ResumeUpload';
@@ -50,19 +49,17 @@ const AVATAR_COLORS = [
 ];
 
 export default function SeekerDashboard() {
-  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resumeProfile, setResumeProfile] = useState(() => getSavedProfile());
 
   useEffect(() => {
-    supabase.from('applications')
-      .select('*, jobs(title, company, type, location)')
-      .eq('seeker_id', user.id)
-      .order('applied_at', { ascending: false })
-      .then(({ data }) => { setApps(data || []); setLoading(false); });
-  }, [user.id]);
+    api.applications.mine()
+      .then(({ applications }) => setApps(applications || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const appliedCount = apps.filter(a => a.status === 'applied').length;
   const reviewCount = apps.filter(a => a.status === 'reviewing').length;
